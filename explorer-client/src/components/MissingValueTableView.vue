@@ -55,9 +55,15 @@
       :filter="filter"
       @filtered="onFiltered"
     >
-      <span slot="qNumber" slot-scope="data" v-html="getWikidataLinkByQNumber(data.value)"></span>
-      <span slot="refs" slot-scope="data" v-html="getALinks(data.value)"></span>
-      <span slot="missingValue" slot-scope="data" v-html="displayMissingValue(data.value)"></span>
+      <template v-slot:cell(qNumber)="data">
+        <span v-html="getWikidataLinkByQNumber(data.value)"></span>
+      </template>
+      <template v-slot:cell(refs)="data">
+        <span v-html="getALinks(data.value)"></span>
+      </template>     
+      <template v-slot:cell(missingValue)="data">
+        <span v-html="displayMissingValue(data.value)"></span>
+      </template>      
     </b-table>
 
     <b-row align-v="center" align-h="start">
