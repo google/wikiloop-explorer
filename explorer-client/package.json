@@ -1,0 +1,66 @@
+{
+  "name": "wikiloop-explorer-client",
+  "version": "1.0.0",
+  "author": "Chaoyue Liu <chaoyuel@google.com>",
+  "scripts": {
+    "start": "node server.js",
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "test": "vue-cli-service test:unit",
+    "lint": "vue-cli-service lint",
+    "test:unit": "vue-cli-service test:unit"
+  },
+  "dependencies": {
+    "@vue/cli": "^3.9.3",
+    "axios": "^0.19.0",
+    "bootstrap": "^4.3.1",
+    "bootstrap-vue": "^2.0.0-rc.18",
+    "core-js": "^2.6.5",
+    "express": "^4.17.1",
+    "lodash": "^4.17.15",
+    "vue": "^2.6.10",
+    "vue-analytics": "^5.17.0",
+    "vue-google-charts": "^0.3.2",
+    "vue-json-csv": "^1.2.5",
+    "vue-router": "^3.0.6"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^3.6.0",
+    "@vue/cli-plugin-eslint": "^3.6.0",
+    "@vue/cli-plugin-unit-jest": "^3.9.0",
+    "@vue/cli-service": "^3.6.0",
+    "@vue/test-utils": "1.0.0-beta.29",
+    "babel-core": "7.0.0-bridge.0",
+    "babel-eslint": "^10.0.1",
+    "babel-jest": "^23.6.0",
+    "eslint": "^5.16.0",
+    "eslint-plugin-vue": "^5.0.0",
+    "vue-loader": "^15.7.1",
+    "vue-template-compiler": "^2.6.10"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "rules": {},
+    "parserOptions": {
+      "parser": "babel-eslint"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ],
+  "license": "Apache-2.0"
+}
