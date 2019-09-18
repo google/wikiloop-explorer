@@ -23,9 +23,9 @@
     style="max-width: 20rem;" 
   >
     <b-card-body>
-        <b-card-title>Wikidata Game</b-card-title>
+      <b-card-title>Wikiloop Game</b-card-title>
       <b-card-text>
-        WikiData Game is a platform built by volunteer developer Magnus Manske allowing other developers to create games for editors to gamify editing Wikidata.org.<br>
+        Wikiloop Game is build on <a href="https://tools.wmflabs.org/wikidata-game/distributed/" target='_blank'>Wikidata Distributed Game Platform</a>, which is built by Magnus Manske.<br>
         Click the links below to the games we've developed.
       </b-card-text>
     </b-card-body>
@@ -34,6 +34,7 @@
       <b-list-group-item><a href="https://tools.wmflabs.org/wikidata-game/distributed/#game=50" target='_blank'>Missing Date of Birth</a></b-list-group-item>
       <b-list-group-item><a href="https://tools.wmflabs.org/wikidata-game/distributed/#game=54" target='_blank'>Missing Place of Birth</a></b-list-group-item>
       <b-list-group-item><a href="https://tools.wmflabs.org/wikidata-game/distributed/#game=46" target='_blank'>Date of Birth Conflicts</a></b-list-group-item>
+      <b-list-group-item><a href="https://tools.wmflabs.org/wikidata-game/distributed/#game=56" target='_blank'>Category Facts</a></b-list-group-item>
     </b-list-group>
   </b-card>
   </b-col>
@@ -43,9 +44,9 @@
     border-variant="primary"
     style="max-width: 20rem;">
      <b-card-body>
-        <b-card-title>Battle Field</b-card-title>
+      <b-card-title>Wikiloop Battlefield</b-card-title>
       <b-card-text>
-        Wikiloop Battle Field is a gamified tool to let users fight with suspicious wikipedia vandlisms. Data offered by Wiki ORES currently.
+        Wikiloop Battlefield is a tool gamifies wikipedia vandalism detection and correction.
       </b-card-text>
       <hr>
       <b-button variant="outline-primary" href="http://battlefield.wikiloop.org/" target='_blank'>Play!</b-button>
