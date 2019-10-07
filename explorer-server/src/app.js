@@ -133,6 +133,27 @@ app.get('/dsstats/:dsname', cache('5 minutes'), async (req, res) => {
     res.send(data);
 })
 
+// Get accumulate edits by day
+app.get('/gamelogs/accumulateedits/:dsname/:epoch', cache('5 minutes'), async (req, res) => {
+    let dsname = req.params.dsname;
+    let epoch = req.params.epoch;
+    try {
+        let editsByDay = knex(dsname + '_' + epoch + '_logging')
+            .withSchema(dsname)
+            .select(knex.raw('date(changetime) as date, count(*) as num'))
+            .groupBy('date')
+        console.log(editsByDay.toString());
+        var data = await knex.select(knex.raw('T3.date, sum(T3.num) as accumulate_edits'))
+            .from(knex.raw('(select T1.date as date, T2.num as num from (' + editsByDay.toString() + ') as T1 cross join (' +
+                editsByDay.toString() + ') as T2 where T1.date >= T2.date order by T1.date) as T3'))
+            .groupByRaw('T3.date')
+    } catch (error) {
+        console.error(error + '\nDataset fetch failed!')
+        res.status(404).send({ message: 'Database unreachable. Please try again later.' });
+    }
+    res.send(data);
+})   
+
 //Get request for dataset leaderboard
 app.get('/dsleaderboard/:dsname', cache('5 minutes'), async (req, res) => {
     let dsname = req.params.dsname;
