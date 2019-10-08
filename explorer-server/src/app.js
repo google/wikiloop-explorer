@@ -25,8 +25,9 @@ const dbEpochCache = {
     'missingdateofbirth': [],
     'missingdateofdeath': [],
     'missingplaceofbirth': [],
-    'catfacts': []
+    'catfacts_missingproperty': []
 }
+const recordsLimit = 5000;
 
 app.use(express.json());
 app.use(cors());
@@ -60,11 +61,18 @@ app.get('/ds/:dsname/:epoch?', cache('5 minutes'), async (req, res, next) => {
         }
         let epoch = existingEpochs[0];
         try {
-            var data = await knex(dsname + '_' + epoch)
+            let count = await knex(dsname + '_' + epoch)
+            .withSchema(dsname)
+            .select(knex.raw('count(*) as total'));
+            let query = knex(dsname + '_' + epoch)
                 .withSchema(dsname)
                 .select('*');
+            if (count[0].total > recordsLimit) {
+                query.limit(recordsLimit);
+            }
+            var data = await query;
         } catch (error) {
-            console.error('Dataset fetch failed!')
+            console.error(error + '\nDataset fetch failed!')
             res.status(404).send({ message: 'Database unreachable. Please try again later.' });
         }
         res.send(data);
@@ -80,9 +88,16 @@ app.get('/ds/:dsname/:epoch?', cache('5 minutes'), async (req, res, next) => {
         return;
     }
     try {
-        var data = await knex(dsname + '_' + epoch)
+        let count = await knex(dsname + '_' + epoch)
+        .withSchema(dsname)
+        .select(knex.raw('count(*) as total'));
+        let query = knex(dsname + '_' + epoch)
             .withSchema(dsname)
             .select('*');
+        if (count[0].total > recordsLimit) {
+            query.limit(recordsLimit);
+        }
+        var data = await query;
     } catch (error) {
         console.error('Dataset fetch failed!')
         res.status(404).send({ message: 'Database unreachable. Please try again later.' });
