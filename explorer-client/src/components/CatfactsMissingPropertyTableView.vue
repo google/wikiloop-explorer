@@ -23,11 +23,11 @@
             <b-form-input v-model="filter" placeholder="Type to Filter"></b-form-input>
             <b-input-group-append>
               <b-button variant="outline-primary" :disabled="!filter" @click="filter = ''">Clear</b-button>
-              <b-button
+              <!-- <b-button
                 variant="outline-primary"
                 :to="{ name: 'AdvancedSearch', query:{dsname: dsname, epoch: currentEpoch}}"
                 v-if="!this.$route.path.includes('advancedsearch')"
-              >Advanced search</b-button>
+              >Advanced search</b-button> -->
             </b-input-group-append>
           </b-input-group>
         </b-form-group>
@@ -39,7 +39,7 @@
         </b-form-group>
       </b-col>
     </b-row>
-    <span v-if="records.length === 5000" style="color:grey; font-style:italic; float:left">Note: Only 5000 rows are rendered here. You can download the full dataset in Advanced Search.</span>
+    <span style="color:grey; font-style:italic; float:left">Note: Only 5000 rows are rendered here. You can download the full dataset in Advanced Search.</span>
     <!-- Main table element -->
     <b-table
       responsive
@@ -55,15 +55,21 @@
       :filter="filter"
       @filtered="onFiltered"
     >
-      <template v-slot:cell(qNumber)="data">
+      <template v-slot:cell(entity)="data">
         <span v-html="getWikidataLinkByQNumber(data.value)"></span>
       </template>
-      <template v-slot:cell(refs)="data">
-        <span v-html="getALinks(data.value)"></span>
-      </template>     
+      <template v-slot:cell(category)="data">
+        <span v-html="getWikidataLinkByQNumber(data.value)"></span>
+      </template>   
+      <template v-slot:cell(property)="data">
+        <span v-html="getWikidataLinkByPNumber(data.value)"></span>
+      </template>  
       <template v-slot:cell(missingValue)="data">
         <span v-html="displayMissingValue(data.value)"></span>
-      </template>      
+      </template>                 
+      <template v-slot:cell(refs)="data">
+        <span v-html="getALinks(data.value)"></span>
+      </template>  
     </b-table>
 
     <b-row align-v="center" align-h="start">
@@ -100,7 +106,7 @@ import _ from "lodash";
 import { getHTMLLinks, getNameForDisplay } from "../utils/utils";
 
 export default {
-  name: "MisingValueTableView",
+  name: "CatfactsMisingPropertyTableView",
   props: ["records", "dsname", "currentEpoch"],
   data() {
     return {
@@ -111,9 +117,11 @@ export default {
       perPage: 20,
       filter: null,
       fields: [
-        { key: "qNumber", label: "Wikidata entity", sortable: true },
-        { key: "missingValue", label: "Missing value", sortable: true },
-        { key: "refs", label: "Wikipedia reference", sortable: true }        
+        { key: "entity", label: "Wikidata entity", sortable: true },
+        { key: "category", label: "Wikidata Category", sortable: true},
+        { key: "property", label: "Property", sortable: true},
+        { key: "missingValue", label: "Property Value"},
+        { key: "refs", label: "Wikipedia Category Reference"}     
       ]
     };
   },
@@ -129,12 +137,16 @@ export default {
     getWikidataLinkByQNumber: function(arg) {
       return `<a href="https://www.wikidata.org/wiki/${arg}" target="_blank"> ${arg} </a>`;
     },
+    getWikidataLinkByPNumber: function(arg) {
+      return `<a href="https://www.wikidata.org/wiki/Property:${arg}" target="_blank"> ${arg} </a>`;
+    },
     displayMissingValue: function(arg) {
+      let reg = RegExp('Q.+');
       if (arg.includes('http://www.wikidata.org/wiki/Q')){
         let qNumber = arg.replace("http://www.wikidata.org/wiki/", "");
         return `<a href="${arg}" target="_blank">${qNumber}</a>`;
-      }else{
-        return arg;
+      }else if (reg.test(arg)){
+        return `<a href="http://www.wikidata.org/wiki/${arg}" target="_blank">${arg}</a>`;
       }
     },
     onFiltered: function(filteredItems) {

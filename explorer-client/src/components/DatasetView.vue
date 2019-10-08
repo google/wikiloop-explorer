@@ -48,11 +48,17 @@
     </b-row>
     <b-spinner label="Loading..." v-if="loading" variant="info" v-bind:style="{marginTop: '2em'}"></b-spinner>
     <missing-value-view 
-      v-if="!loading"
+      v-if="!loading && !dsname.includes('catfacts')"
       :records="records"
       :dsname="dsname"
       :currentEpoch="currentEpoch"
     ></missing-value-view>
+    <catfacts-missing-property
+      v-else-if="!loading && dsname.includes('catfacts')"
+      :records="records"
+      :dsname="dsname"
+      :currentEpoch="currentEpoch" 
+    ></catfacts-missing-property>
   </b-container>
 </template>
 
@@ -62,6 +68,7 @@ import axios from "axios";
 import _ from "lodash";
 import { getHTMLLinks, getNameForDisplay } from "../utils/utils";
 import MissingValueTableView from "./MissingValueTableView.vue";
+import CatfactsMissingPropertyTableView from "./CatfactsMissingPropertyTableView.vue";
 
 const backend_url =
   "https://explorer-backend-dot-dataz-wikiloop-dev.appspot.com";
@@ -70,7 +77,9 @@ const game_root_url = "https://tools.wmflabs.org/wikidata-game/distributed";
 export default {
   name: "DatasetView",
   props: ["dsname"],
-  components: {"missing-value-view": MissingValueTableView},  
+  components: {
+    "missing-value-view": MissingValueTableView,
+    "catfacts-missing-property": CatfactsMissingPropertyTableView},  
   data() {
     return {
       loading: true,
@@ -81,7 +90,6 @@ export default {
       totalRows: 1,
       perPage: 20,
       filter: null,
-      fields: [],
       records: [],
       dataEpochs: [],
       currentEpoch: "",
@@ -102,6 +110,8 @@ export default {
           return game_root_url + "/#game=50";
         case "missingplaceofbirth":
           return game_root_url + "/#game=54";
+        case "catfacts_missingproperty":
+          return game_root_url + "/#game=56";
         default:
           return "#";
       }
@@ -113,27 +123,20 @@ export default {
         this.dataEpochs = response.data;
         this.currentEpoch = this.dataEpochs[0];
       });
-
-      // Initialization for missing value dataset
-      if (this.dsname.includes("missing")) {
-        axios
-          .get(backend_url + "/ds/" + this.dsname)
-          .then(response => {
-            this.loading = false;
-            this.records = response.data;
-            this.totalRows = this.records.length;
-          })
-          .catch(error => {
-            this.loading = false;
-            throw error;
-          });
-
-        this.fields = [
-          { key: "qNumber", label: "Wikidata entity", sortable: true },
-          { key: "missingValue", label: "Missing value", sortable: true },
-          { key: "refs", label: "Wikipedia reference", sortable: true }
-        ];
-      }
+      // // Initialization for missing value dataset
+      // else if (this.dsname.includes("missing")) {
+      axios
+        .get(backend_url + "/ds/" + this.dsname)
+        .then(response => {
+          this.loading = false;
+          this.records = response.data;
+          this.totalRows = this.records.length;
+        })
+        .catch(error => {
+          this.loading = false;
+          throw error;
+        });
+      // }
     },
     getALinks: function(arg) {
       return getHTMLLinks(arg);

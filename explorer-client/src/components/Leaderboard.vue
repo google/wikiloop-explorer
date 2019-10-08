@@ -22,7 +22,7 @@
     </b-row>
     <b-row>
       <b-col md="6">
-        <h3 class="text-left">{{datasetDsplayName}}</h3>
+        <h3 class="text-left">{{dsDisplayName}}</h3>
       </b-col>
       <b-col md="6">
         <h3 class="text-right">Epoch: {{epoch}}</h3>
@@ -41,6 +41,7 @@
 
 <script>
 import axios from "axios";
+import { getNameForDisplay } from "../utils/utils";
 const backendurl =
   "https://explorer-backend-dot-dataz-wikiloop-dev.appspot.com";
 
@@ -67,16 +68,9 @@ export default {
     this.initiateData();
   },
   computed: {
-    datasetDsplayName: function() {
-      switch (this.dsname) {
-        case "missingdateofdeath":
-          return "Missing Date of Death";
-        case "missingdateofbirth":
-          return "Missing Date of Birth";
-        default:
-          return "No matching record";
-      }
-    }
+    dsDisplayName: function() {
+      return getNameForDisplay(this.dsname);
+    },
   },
   methods: {
     initiateData: async function() {

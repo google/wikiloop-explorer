@@ -18,7 +18,7 @@ const datasetNameToDisplayMap = {
   'missingdateofdeath': 'Missing Date of Death',
   'missingdateofbirth': 'Missing Date of Birth',
   'missingplaceofbirth': 'Missing Place of Birth',
-  'catfacts': 'Category Facts'
+  'catfacts_missingproperty': 'Category Facts - Missing Property'
 }
 
 export const languageAbbrMap = {

@@ -140,6 +140,7 @@
             }]
           };
         }
+        return [];
       },
       withheldData: function() {
         if (this.editComparisonReceived){
@@ -150,19 +151,25 @@
               data: [this.editComparisonData.withheldUpdated, this.editComparisonData.withheldNotUpdated]
             }]
           };      
-        }  
+        }
+        return [];  
       }
     },
     methods: {
       initiateData: async function(){
         // axios call to backend to get data
         try{
-        let comparisonDataCall = axios.get(backendurl + '/gamelogs/editsComparison/' + this.dsname,{
-                    params: {epoch: this.epoch}
-                });
-        let accumulateEditsCall = axios.get(backendurl + '/gamelogs/accumulateedits/' + this.dsname + '/' + this.epoch);
-        let decisionsCall = axios.get(backendurl + '/gamelogs/decisions/' + this.dsname + '/' + this.epoch);
-        var [comparisonData, accumulateEdits, decisions] = await Promise.all([comparisonDataCall, accumulateEditsCall, decisionsCall]);
+          let accumulateEditsCall = axios.get(backendurl + '/gamelogs/accumulateedits/' + this.dsname + '/' + this.epoch);
+          let decisionsCall = axios.get(backendurl + '/gamelogs/decisions/' + this.dsname + '/' + this.epoch);          
+          let reg = RegExp('^missing.+');
+          if (reg.test(this.dsname)) {
+            let comparisonDataCall = axios.get(backendurl + '/gamelogs/editsComparison/' + this.dsname,{
+                        params: {epoch: this.epoch}
+                    });
+            var [comparisonData, accumulateEdits, decisions] = await Promise.all([comparisonDataCall, accumulateEditsCall, decisionsCall]);
+          }else {
+            [accumulateEdits, decisions] = await Promise.all([accumulateEditsCall, decisionsCall]);
+          }
         }catch(error) {
           console.error(error + '\nFailed to get stats data!')
           this.dataReceived = false;
