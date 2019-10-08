@@ -26,42 +26,63 @@
         <h3 class="text-right">Epoch: {{epoch}}</h3>
       </b-col>
     </b-row>
-    <h3 v-if="!statsGot" style="margin-top:2em">Stats not available.</h3>
-    <b-card v-if="statsGot" title="Changes made by editors" >
+    <b-spinner label="Loading..." v-if="loading" variant="info" v-bind:style="{marginTop: '2em'}"></b-spinner>
+    <div v-if="!loading">
+    <h3 v-if="!dataReceived" style="margin-top:2em">Stats not available.</h3>
+    <b-card v-if="decisionDistributionReceived" title="Decisions Made">
+      <b-row align-v="center">
+      <b-col md="6">
+        <span>Edits Distribution</span>
+        <doughnut-chart :chartdata="decisionDistribution" :options="defaultChartOptions"/>
+      </b-col>
+      <b-col md="6">
+        <b-table bordered striped :items="decisionsDistributionInTable"></b-table>
+      </b-col>
+      </b-row>
+    </b-card>    
+    <b-card v-if="editsByDayReceived" title="Edits by Time">
+      <line-chart v-if="editsByDayReceived" :chartdata="editsByDay" :options="defaultChartOptions"/>
+    </b-card>
+    <b-card v-if="editComparisonReceived" title="Edits comparison">
     <b-row>      
       <b-col md="6">
-        <GChart
-          type="PieChart"
-          :data="publishedData"
-          :options="chartOptionsPublished"
-        />
+        <span>Published entities</span>
+        <doughnut-chart v-if="editComparisonReceived" :chartdata="publishedData" :options="defaultChartOptions"/>
       </b-col>
       <b-col md="6">
-        <GChart
-          type="PieChart"
-          :data="withheldData"
-          :options="chartOptionsWithheld"
-        />
+        <span>Withheld entities</span>
+        <doughnut-chart v-if="editComparisonReceived" :chartdata="withheldData" :options="defaultChartOptions"/>
       </b-col>
     </b-row>
-    </b-card>
+    </b-card>   
+    </div> 
   </b-container>
 </template>
 
 <script>
 /* eslint-disable no-console */
   import axios from 'axios';
+  import LineChart from './LineChart.vue';
+  import DoughnutChart from './DoughnutChart.vue';
+  import { getNameForDisplay } from "../utils/utils";
   const backendurl = 'https://explorer-backend-dot-dataz-wikiloop-dev.appspot.com';
   const titleSize = 20;
+  const colors = ['#41B883', '#E46651', '#00D8FF', '#DD1B16'];
   
   export default {
     name: 'StatsGraph',
     props: ['dsname', 'epoch'],
+    components: {"line-chart": LineChart, "doughnut-chart": DoughnutChart},  
     data() {
       return {
-        allData: {},
-        statsGot: false,
+        loading: true,
+        dataReceived: false,
+        editComparisonReceived: false,
+        editsByDayReceived: false,
+        decisionDistributionReceived: false,
+        logCalculated: false,
         leaderboardData: [],
+        editComparisonData: {},
         chartOptionsPublished: {
           title: 'Pubished entities',
           titleTextStyle: {
@@ -92,7 +113,14 @@
           showRowNumber: true, 
           width: '100%', 
           height: '100%'
-        } 
+        },
+        editsByDay: null,
+        decisionDistribution: null,
+        decisionsDistributionInTable: null,
+        defaultChartOptions: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
       }
     },
     mounted: function() {
@@ -100,49 +128,93 @@
     },
     computed: {
       datasetDsplayName: function() {
-        switch(this.dsname) {
-          case 'missingdateofdeath':
-            return 'Missing Date of Death'
-          case 'missingdateofbirth':
-            return 'Missing Date of Birth'
-          default:
-            return 'No matching dataset'
-        }       
+        return getNameForDisplay(this.dsname);     
       },
       publishedData: function() {
-        let res = [];
-        if (this.statsGot){
-          res.push(['status', 'count']);
-          res.push(['updated', this.allData['publishedUpdated']]);
-          res.push(['not-updated', this.allData['publishedNotUpdated']]);
+        if (this.editComparisonReceived){
+          return {
+            labels: ['updated', 'not-updated'],
+            datasets: [{
+              backgroundColor: colors.slice(0, 2),
+              data: [this.editComparisonData.publishedUpdated, this.editComparisonData.publishedNotUpdated]
+            }]
+          };
         }
-        return res;
       },
       withheldData: function() {
-        let res = [];
-        if (this.statsGot){
-          res.push(['status', 'count']);
-          res.push(['updated', this.allData['withheldUpdated']]);
-          res.push(['not-updated', this.allData['withheldNotUpdated']]);
-        }
-        return res;
-      },      
+        if (this.editComparisonReceived){
+          return {
+            labels: ['updated', 'not-updated'],
+            datasets: [{
+              backgroundColor: colors.slice(0, 2),
+              data: [this.editComparisonData.withheldUpdated, this.editComparisonData.withheldNotUpdated]
+            }]
+          };      
+        }  
+      }
     },
     methods: {
       initiateData: async function(){
         // axios call to backend to get data
         try{
-        var res = await axios.get(backendurl + '/dsstats/' + this.dsname,{
+        let comparisonDataCall = axios.get(backendurl + '/gamelogs/editsComparison/' + this.dsname,{
                     params: {epoch: this.epoch}
                 });
+        let accumulateEditsCall = axios.get(backendurl + '/gamelogs/accumulateedits/' + this.dsname + '/' + this.epoch);
+        let decisionsCall = axios.get(backendurl + '/gamelogs/decisions/' + this.dsname + '/' + this.epoch);
+        var [comparisonData, accumulateEdits, decisions] = await Promise.all([comparisonDataCall, accumulateEditsCall, decisionsCall]);
         }catch(error) {
-          console.error('Failed to get stats data!')
-          this.statsGot = false;
+          console.error(error + '\nFailed to get stats data!')
+          this.dataReceived = false;
+          this.loading = false;
         }
-        if (res) {
-          this.allData = res.data[0];
-          this.statsGot = true;
+        this.loading = false;
+        if (comparisonData) {
+          this.editComparisonData = comparisonData.data[0];
+          if (this.editComparisonData) {
+            this.editComparisonReceived = true;
+          }
+          this.dataReceived = true;
         }
+        if (accumulateEdits) {
+          this.editsByDay = {
+            labels: accumulateEdits.data.map(r => {
+              let d = new Date(r.date);
+              return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+            }),
+            datasets: [
+              {
+                label: 'Edits by Day',
+                data: accumulateEdits.data.map(r => {return r.accumulate_edits;}),
+                backgroundColor: '#41B883'
+              }
+            ]
+          };
+          this.editsByDayReceived = true;
+          this.dataReceived = true;
+        }
+        if (decisions) {
+          this.decisionDistribution = {
+            labels: decisions.data.map(r => {
+              return r.decision;
+            }),
+            datasets: [
+              {
+                data: decisions.data.map(r => {return r.num;}),
+                backgroundColor: colors.slice(0, decisions.data.length)
+              }
+            ]
+          };
+          console.log(decisions.data);
+          this.decisionsDistributionInTable = [];
+          decisions.data.forEach(r => {
+            this.decisionsDistributionInTable.push({decision: r.decision.toUpperCase(), count: r.num});
+          });
+          let sum = decisions.data.reduce((acc, cur) => {return acc + cur.num}, 0);
+          this.decisionsDistributionInTable.push({decision: 'TOTAL', count: sum})
+          this.decisionDistributionReceived = true;
+          this.dataReceived = true;
+        }        
       }
     }
   }
