@@ -154,6 +154,22 @@ app.get('/gamelogs/accumulateedits/:dsname/:epoch', cache('5 minutes'), async (r
     res.send(data);
 })   
 
+// Get editor decision distribution
+app.get('/gamelogs/decisions/:dsname/:epoch', cache('5 minutes'), async (req, res) => {
+    let dsname = req.params.dsname;
+    let epoch = req.params.epoch;
+    try {
+        var data = await knex(dsname + '_' + epoch + '_logging')
+            .withSchema(dsname)
+            .select('decision', knex.raw('count(*) as num'))
+            .groupBy('decision')
+    } catch (error) {
+        console.error(error + '\nDataset fetch failed!')
+        res.status(404).send({ message: 'Database unreachable. Please try again later.' });
+    }
+    res.send(data);
+}) 
+
 //Get request for dataset leaderboard
 app.get('/dsleaderboard/:dsname', cache('5 minutes'), async (req, res) => {
     let dsname = req.params.dsname;
