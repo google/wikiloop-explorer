@@ -102,7 +102,7 @@ app.get('/dsepoch/:dsname', cache('5 minutes'), async (req, res) => {
 });
 
 // Get request for dataset stats
-app.get('/dsstats/:dsname', cache('5 minutes'), async (req, res) => {
+app.get('/gamelogs/editsComparison/:dsname', cache('5 minutes'), async (req, res) => {
     let dsname = req.params.dsname;
     existingEpochs = await getDsEpoch(dsname);
     if (existingEpochs.length === 0) {
