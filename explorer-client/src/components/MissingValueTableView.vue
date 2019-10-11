@@ -39,7 +39,7 @@
         </b-form-group>
       </b-col>
     </b-row>
-    <span v-if="records.length === 5000" style="color:grey; font-style:italic; float:left">Note: Only 5000 rows are rendered here. You can download the full dataset in Advanced Search.</span>
+    <span v-if="records.length === 1000" style="color:grey; font-style:italic; float:left">Note: Only 1000 rows are rendered here. You can download the full dataset in Advanced Search.</span>
     <!-- Main table element -->
     <b-table
       responsive
