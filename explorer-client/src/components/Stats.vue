@@ -20,7 +20,7 @@
     </b-row>  
     <b-row>
       <b-col md="6">
-        <h3 class="text-left">{{datasetDsplayName}}</h3>
+        <h3 class="text-left">{{datasetDisplayName}}</h3>
       </b-col>
       <b-col md="6">
         <h3 class="text-right">Epoch: {{epoch}}</h3>
@@ -127,7 +127,7 @@
       this.initiateData();
     },
     computed: {
-      datasetDsplayName: function() {
+      datasetDisplayName: function() {
         return getNameForDisplay(this.dsname);     
       },
       publishedData: function() {

@@ -23,6 +23,7 @@ import ToolsList from '@/components/ToolsList'
 import Stats from '@/components/Stats'
 import Leaderboard from '@/components/Leaderboard'
 import AdvancedSearch from '@/components/AdvancedSearch'
+import CatFactsAdvancedSearch from '@/components/CatFactsAdvancedSearch'
 
 Vue.use(Router)
 
@@ -65,6 +66,15 @@ export default new Router({
         epoch: route.query.epoch
       })
     },
+    {
+      path: '/catfactadvancedsearch',
+      name: 'CatFactsAdvancedSearch',
+      component: CatFactsAdvancedSearch,
+      props: route => ({
+        dsname: route.query.dsname,
+        epoch: route.query.epoch
+      })
+    },    
   ]
 })
 

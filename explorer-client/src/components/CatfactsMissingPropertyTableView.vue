@@ -23,11 +23,11 @@
             <b-form-input v-model="filter" placeholder="Type to Filter"></b-form-input>
             <b-input-group-append>
               <b-button variant="outline-primary" :disabled="!filter" @click="filter = ''">Clear</b-button>
-              <!-- <b-button
+              <b-button
                 variant="outline-primary"
-                :to="{ name: 'AdvancedSearch', query:{dsname: dsname, epoch: currentEpoch}}"
+                :to="{ name: 'CatFactsAdvancedSearch', query:{dsname: dsname, epoch: currentEpoch}}"
                 v-if="!this.$route.path.includes('advancedsearch')"
-              >Advanced search</b-button> -->
+              >Advanced search</b-button>
             </b-input-group-append>
           </b-input-group>
         </b-form-group>
@@ -49,7 +49,7 @@
       id="my-table"
       head-variant="light"
       :items="records"
-      :fields="fields"
+      :fields="conditionalFields"
       :per-page="perPage"
       :current-page="currentPage"
       :filter="filter"
@@ -107,7 +107,7 @@ import { getHTMLLinks, getNameForDisplay } from "../utils/utils";
 
 export default {
   name: "CatfactsMisingPropertyTableView",
-  props: ["records", "dsname", "currentEpoch"],
+  props: ["records", "dsname", "currentEpoch", "reviewed"],
   data() {
     return {
       pageOptions: [5, 20, 100],
@@ -115,19 +115,33 @@ export default {
       selected: null,
       totalRows: this.records.length,
       perPage: 20,
-      filter: null,
-      fields: [
-        { key: "entity", label: "Wikidata entity", sortable: true },
-        { key: "category", label: "Wikidata Category", sortable: true},
-        { key: "property", label: "Property", sortable: true},
-        { key: "missingValue", label: "Property Value"},
-        { key: "refs", label: "Wikipedia Category Reference"}     
-      ]
+      filter: null
     };
   },
   computed: {
     dsDisplayName: function() {
       return getNameForDisplay(this.dsname);
+    },
+    conditionalFields: function() {
+      if (this.reviewed) {
+        return [
+          { key: "entity", label: "Wikidata entity", sortable: true },
+          { key: "category", label: "Wikidata Category", sortable: true},
+          { key: "property", label: "Property", sortable: true},
+          { key: "missingValue", label: "Property Value"},
+          { key: "refs", label: "Wikipedia Category Reference"},
+          { key: "user", label: "User"},
+          { key: "decision", label: "Decison"}   
+        ];
+      } else {
+        return [
+          { key: "entity", label: "Wikidata entity", sortable: true },
+          { key: "category", label: "Wikidata Category", sortable: true},
+          { key: "property", label: "Property", sortable: true},
+          { key: "missingValue", label: "Property Value"},
+          { key: "refs", label: "Wikipedia Category Reference"}     
+        ];
+      }
     }
   },
   methods: {
