@@ -230,10 +230,8 @@ import {
 import JsonCSV from "vue-json-csv";
 import CatfactsMissingPropertyTableView from "./CatfactsMissingPropertyTableView.vue";
 
-// const backendurl =
-//   "https://explorer-backend-dot-dataz-wikiloop-dev.appspot.com";
 const backendurl =
-  "https://explorer-backend-dev-dot-dataz-wikiloop-dev.appspot.com";
+  "https://explorer-backend-dot-dataz-wikiloop-dev.appspot.com";
 const languageSupported = Object.keys(languageAbbrMap)
   .sort((a, b)=>{return languageAbbrMap[a].localeCompare(languageAbbrMap[b])});
 const nullEpochList = [{ value: null, text: "Please choose a dataset first" }];

@@ -376,7 +376,7 @@ async function queryCatfactsMissingProperty(reqbody) {
                     })
                 })     
             }
-            if (userDecision && userDecision.length > 0) {
+            if (userDecision && userDecision.length > 0 && !userDecision.includes('all')) {
                 query.andWhere((builder) => {
                     userDecision.forEach(i => {
                         builder.orWhere('decision', i);

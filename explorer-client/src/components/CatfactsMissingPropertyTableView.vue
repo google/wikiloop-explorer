@@ -134,7 +134,7 @@ export default {
           { key: "property", label: "Property", sortable: true},
           { key: "missingValue", label: "Property Value"},
           { key: "refs", label: "Wikipedia Category Reference"},
-          { key: "user", label: "User"},
+          { key: "user", label: "User", sortable: true},
           { key: "decision", label: "Decison"}   
         ];
       } else {
