@@ -16,6 +16,7 @@ const express = require('express');
 const cors = require('cors');
 const apicache = require('apicache');
 const dbConnect = require('./db');
+// const stringify = require('csv-stringify');
 
 const app = express();
 const cache = apicache.middleware;
@@ -44,7 +45,7 @@ app.get('/dslist', cache('5 minutes'), async (req, res) => {
         var datasetlist = await knex.withSchema(metaDB).from('datasetname').select('name');
     } catch (error) {
         console.error(error)
-        res.status(404).send({ message: 'Database unreachable. Please try again later.' });
+        res.status(404).send({ errMessage: 'Database unreachable. Please try again later.' });
     }
     datasetlist = datasetlist.map(v => v.name);
     res.send(datasetlist);
@@ -56,7 +57,7 @@ app.get('/ds/:dsname/:epoch?', cache('5 minutes'), async (req, res, next) => {
         let dsname = req.params.dsname;
         existingEpochs = await getDsEpoch(dsname);
         if (existingEpochs.length === 0) {
-            res.status(404).send({ message: 'No record for this dataset!' })
+            res.status(404).send({ errMessage: 'No record for this dataset!' })
             return;
         }
         let epoch = existingEpochs[0];
@@ -67,7 +68,7 @@ app.get('/ds/:dsname/:epoch?', cache('5 minutes'), async (req, res, next) => {
                 .limit(recordsLimit)
         } catch (error) {
             console.error(error + '\nDataset fetch failed!')
-            res.status(404).send({ message: 'Database unreachable. Please try again later.' });
+            res.status(404).send({ errMessage: 'Database unreachable. Please try again later.' });
         }
         res.send(data);
     }
@@ -78,7 +79,7 @@ app.get('/ds/:dsname/:epoch?', cache('5 minutes'), async (req, res, next) => {
     let epoch = req.params.epoch;
     existingEpochs = await getDsEpoch(dsname);
     if (existingEpochs.length === 0 || !existingEpochs.includes(epoch)) {
-        res.status(404).send({ message: 'No record for this dataset!' })
+        res.status(404).send({ errMessage: 'No record for this dataset!' })
         return;
     }
     try {
@@ -88,7 +89,7 @@ app.get('/ds/:dsname/:epoch?', cache('5 minutes'), async (req, res, next) => {
         .limit(recordsLimit)
     } catch (error) {
         console.error('Dataset fetch failed!')
-        res.status(404).send({ message: 'Database unreachable. Please try again later.' });
+        res.status(404).send({ errMessage: 'Database unreachable. Please try again later.' });
     }
     res.send(data);
 })
@@ -98,7 +99,7 @@ app.get('/dsepoch/:dsname', cache('5 minutes'), async (req, res) => {
     let dsname = req.params.dsname;
     let epochs = await getDsEpoch(dsname);
     if (epochs.length === 0) {
-        res.status(404).send({ message: 'No record for this dataset!' });
+        res.status(404).send({ errMessage: 'No record for this dataset!' });
         return;
     }
     res.send(epochs);
@@ -109,13 +110,13 @@ app.get('/gamelogs/editsComparison/:dsname', cache('5 minutes'), async (req, res
     let dsname = req.params.dsname;
     existingEpochs = await getDsEpoch(dsname);
     if (existingEpochs.length === 0) {
-        res.status(404).send({ message: 'No record for this dataset!' })
+        res.status(404).send({ errMessage: 'No record for this dataset!' })
         return;
     }
     if (req.query.epoch) {
         var epoch = req.query.epoch
         if (!existingEpochs.includes(epoch)) {
-            res.status(404).send({ message: 'Invalid epoch!' })
+            res.status(404).send({ errMessage: 'Invalid epoch!' })
             return;
         }
     } else {
@@ -131,7 +132,7 @@ app.get('/gamelogs/editsComparison/:dsname', cache('5 minutes'), async (req, res
             .limit(1);
     } catch (error) {
         console.error('Dataset fetch failed!')
-        res.status(404).send({ message: 'Database unreachable. Please try again later.' });
+        res.status(404).send({ errMessage: 'Database unreachable. Please try again later.' });
     }
     res.send(data);
 })
@@ -152,7 +153,7 @@ app.get('/gamelogs/accumulateedits/:dsname/:epoch', cache('5 minutes'), async (r
             .groupByRaw('T3.date')
     } catch (error) {
         console.error(error + '\nDataset fetch failed!')
-        res.status(404).send({ message: 'Database unreachable. Please try again later.' });
+        res.status(404).send({ errMessage: 'Database unreachable. Please try again later.' });
     }
     res.send(data);
 })   
@@ -168,7 +169,7 @@ app.get('/gamelogs/decisions/:dsname/:epoch', cache('5 minutes'), async (req, re
             .groupBy('decision')
     } catch (error) {
         console.error(error + '\nDataset fetch failed!')
-        res.status(404).send({ message: 'Database unreachable. Please try again later.' });
+        res.status(404).send({ errMessage: 'Database unreachable. Please try again later.' });
     }
     res.send(data);
 }) 
@@ -178,13 +179,13 @@ app.get('/dsleaderboard/:dsname', cache('5 minutes'), async (req, res) => {
     let dsname = req.params.dsname;
     existingEpochs = await getDsEpoch(dsname);
     if (existingEpochs.length === 0) {
-        res.status(404).send({ message: 'No record for this dataset!' })
+        res.status(404).send({ errMessage: 'No record for this dataset!' })
         return;
     }
     if (req.query.epoch) {
         var epoch = req.query.epoch
         if (!existingEpochs.includes(epoch)) {
-            res.status(404).send({ message: 'Invalid epoch!' })
+            res.status(404).send({ errMessage: 'Invalid epoch!' })
             return;
         }
     } else {
@@ -199,7 +200,7 @@ app.get('/dsleaderboard/:dsname', cache('5 minutes'), async (req, res) => {
             .orderBy('num', 'desc')
     } catch (err) {
         console.error(err);
-        res.status(404).send({ message: 'Database unreachable. Please try again later.' });
+        res.status(404).send({ errMessage: 'Database unreachable. Please try again later.' });
         return;
     }
     res.send(users);
@@ -208,11 +209,32 @@ app.get('/dsleaderboard/:dsname', cache('5 minutes'), async (req, res) => {
 // Advanced search
 app.post('/advancedsearch', async (req, res) => {
     let reqbody = req.body;
-    if (reqbody.dsname.includes('missing')) {
-        let result = await queryMissingValueDataset(reqbody);
+    let reg = RegExp('^missing.+');
+    if (reg.test(reqbody.dsname)) {
+        let result;
+        try {
+            result = await queryMissingValueDataset(reqbody);
+        } catch(err) {
+            console.error(err);
+            res.status(404).send({errMessage: 'Database unreachable. Please try again later.' });
+        }
         res.send(result);
     } else if (reqbody.dsname.includes('catfacts')) {
-        //TODO
+        let result;
+        if (reqbody.reviewed && reqbody.reviewed === 'no') {
+            let resForUnreviewed = await queryCatfactsMissingProperty(reqbody);
+            res.send(resForUnreviewed);
+        } else {
+            try {
+                result = await queryCatfactsMissingProperty(reqbody);
+            } catch(err) {
+                console.error(err);
+                res.status(404).send({ errMessage: 'Database unreachable. Please try again later.' });
+            }
+            res.send(result);
+        }
+    } else {
+        res.send([]);
     }
 });
 
@@ -243,7 +265,7 @@ async function queryMissingValueDataset(reqbody) {
     if (qItems.length !== 0) {
         query.whereIn('qNumber', qItems);
     }
-    if (!langs.includes('all') && langs.length > 0) {
+    if (!langs.includes('none') && langs.length > 0) {
         query.where(function () {
             for (let lang of langs) {
                 this.orWhere('languages', 'like', '%' + lang + '%');
@@ -251,6 +273,123 @@ async function queryMissingValueDataset(reqbody) {
         });
     }
     return query;
+}
+
+async function queryCatfactsMissingProperty(reqbody) {
+    let epoch = reqbody.epoch;
+    let dsname = reqbody.dsname;
+    let dstable = dsname + '_' + epoch;
+    let query = knex.withSchema(dsname);
+    let entitiesAnd = reqbody.entitiesAnd;
+    let entitiesOr = reqbody.entitiesOr;
+    let languagesAnd = reqbody.languagesAnd;
+    let languagesOr = reqbody.languageOr;
+    let reviewed = reqbody.reviewed;
+    // Entity match
+    if (entitiesAnd) {
+        let andList = entitiesAnd.split(',');
+        query.where((builder) => {
+            andList.forEach(i => {
+                i = i.trim();
+                builder.andWhere('id', 'like', '%' + i + '%')
+            })
+        })  
+    }
+    if (entitiesOr) {
+        let orList = entitiesOr.split(',');
+        query.andwhere((builder) => {
+            orList.forEach(i => {
+                i = i.trim();
+                builder.orWhere('id', 'like', '%' + i + '%')
+            })
+        })            
+    }
+    // Language match
+    if (languagesAnd && languagesAnd.length > 0){
+        query.andWhere((builder) => {
+            for (let l of languagesAnd) {
+                if (l !== 'none') {
+                    builder.andWhere('refLanguages', 'like', '%' + l + '%');
+                }
+            }
+        })
+    }
+    if (languagesOr && languagesOr.length > 0 && !languagesOr.includes('none')) {
+        query.andWhere((builder) => {
+            for (let l of languagesOr) {
+                builder.orWhere('refLanguages', 'like', '%' + l + '%');
+            }
+        })
+    }
+    // reviewd or not
+    if (!reviewed || reviewed === 'all') {
+        if (reqbody.type === "display") {
+            query.limit(recordsLimit);
+        }
+        query.from(dstable).select('entity', 'category', 'property', 'missingValue', 'refs');
+        console.log(query.toString());
+        return query;
+    }else {
+        if (reviewed === 'no') {
+            // special treatment for no cases cause its super slow
+            // Move the "join" logic from mysql to here
+            let reviewed = await knex.withSchema(dsname).from(dstable + '_logging').select('id');
+            let reviewedIds = [];
+            reviewed.map(r => {
+                reviewedIds.push(r.id);
+            })
+            if (reqbody.type === "display") {
+                query.limit(recordsLimit + reviewedIds.length);
+            }
+            query.from(dstable);
+            let tempRecords = await query.from(dstable)
+            .select('id', 'entity', 'category', 'property', 'missingValue', 'refs')
+            let result = [];
+            tempRecords.map(r => {
+                if (!reviewedIds.includes(r.id)) {
+                    result.push({
+                        entity: r.entity,
+                        catrgory: r.category,
+                        property: r.property,
+                        missingValue: r.missingValue,
+                        refs: r.refs
+                    });
+                }
+            })
+            if (reqbody.type === "display") {
+                return result.slice(0, recordsLimit);
+            }else {
+                return result;
+            }
+        }else {
+            if (reqbody.type === "display") {
+                query.limit(recordsLimit);
+            }
+            let userInclude = reqbody.userInclude;
+            let userDecision = reqbody.userDecision;
+            if (userInclude) {
+                let userList = userInclude.split(',');
+                query.andWhere((builder) => {
+                    userList.forEach(i => {
+                        i = i.trim();
+                        builder.orWhere('user', i);
+                    })
+                })     
+            }
+            if (userDecision && userDecision.length > 0) {
+                query.andWhere((builder) => {
+                    userDecision.forEach(i => {
+                        builder.orWhere('decision', i);
+                    })
+                })               
+            }
+            query.from(knex.raw(dstable))
+            .joinRaw('inner join ' + dsname + '.' + dstable + '_logging using (id, entity, category, property)')
+            .select('entity', 'category', 'property', 'missingValue', 'refs', 'user', 'decision')
+            console.log(query.toString());
+            return query;
+        }
+    }
 }
 
 // Get dataset epoch

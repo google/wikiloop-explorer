@@ -15,7 +15,10 @@
 -->
 <template>
   <div>
-    <b-img src="https://raw.githubusercontent.com/google/wikiloop-explorer/master/explorer-client/src/assets/WikiLoop_Explorer_Logo.jpg" fluid alt="Responsive image"></b-img>
+    <a href="https://meta.wikimedia.org/wiki/WikiProject_WikiLoop" target="_blank">
+    <b-img src="https://raw.githubusercontent.com/google/wikiloop-explorer/master/explorer-client/src/assets/WikiLoop_Explorer_Logo.jpg" fluid alt="Responsive image">
+    </b-img>
+    </a>
     <h1 class="my-4" style="font-size:4vw;">Welcome to Wikiloop Explorer!</h1>
   </div>
 </template>

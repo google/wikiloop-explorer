@@ -240,7 +240,7 @@ export default {
       return options;
     },
     getLangOptions: function() {
-      let options = [{ value: "all", text: "All" }];
+      let options = [{ value: "none", text: "None" }];
       languageSupported.forEach(l => {
         options.push({ value: l, text: getFullLanguage(l) });
       });

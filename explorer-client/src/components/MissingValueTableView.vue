@@ -39,7 +39,7 @@
         </b-form-group>
       </b-col>
     </b-row>
-    <span v-if="records.length === 1000" style="color:grey; font-style:italic; float:left">Note: Only 1000 rows are rendered here. You can download the full dataset in Advanced Search.</span>
+    <span v-if="records.length === recordsLimit" style="color:grey; font-style:italic; float:left">Note: Only {{recordsLimit}} rows are rendered here. You can download the full dataset in Advanced Search.</span>
     <!-- Main table element -->
     <b-table
       responsive
@@ -110,6 +110,7 @@ export default {
       totalRows: this.records.length,
       perPage: 20,
       filter: null,
+      recordsLimit: 1000,
       fields: [
         { key: "qNumber", label: "Wikidata entity", sortable: true },
         { key: "missingValue", label: "Missing value", sortable: true },

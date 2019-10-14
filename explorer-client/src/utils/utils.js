@@ -49,7 +49,20 @@ export const languageAbbrMap = {
   'th': 'Thai',
   'ca': 'Catalan',
   'el': 'Greek',
-  'no': 'Norwegian (Bokmål)'
+  'no': 'Norwegian (Bokmål)',
+  'tr': 'Turkish',
+  'da': 'Danish',
+  'bg': 'Bulgarian',
+  'et': 'Estonian',
+  'hr': 'Croatian',
+  'lt': 'Lithuanian',
+  'lv': 'Latvian',
+  'ms': 'Malay',
+  'ro': 'Romanian',
+  'sk': 'Slovak',
+  'sl': 'Slovene',
+  'sr': 'Serbian',
+  'tl': 'Tagalog'
 }
 
 export function getNameForDisplay(dsname) {

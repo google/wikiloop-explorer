@@ -39,7 +39,7 @@
         </b-form-group>
       </b-col>
     </b-row>
-    <span v-if="records.length === 1000" style="color:grey; font-style:italic; float:left">Note: Only 1000 rows are rendered here. You can download the full dataset in Advanced Search.</span>
+    <span v-if="records.length === recordsLimit" style="color:grey; font-style:italic; float:left">Note: Only {{recordsLimit}} rows are rendered here. You can download the full dataset in Advanced Search.</span>
     <!-- Main table element -->
     <b-table
       responsive
@@ -70,6 +70,9 @@
       <template v-slot:cell(refs)="data">
         <span v-html="getALinks(data.value)"></span>
       </template>  
+      <template v-slot:cell(user)="data">
+        <span v-html="getWikidataUserLink(data.value)"></span>
+      </template>        
     </b-table>
 
     <b-row align-v="center" align-h="start">
@@ -115,7 +118,8 @@ export default {
       selected: null,
       totalRows: this.records.length,
       perPage: 20,
-      filter: null
+      filter: null,
+      recordsLimit: 1000
     };
   },
   computed: {
@@ -153,6 +157,9 @@ export default {
     },
     getWikidataLinkByPNumber: function(arg) {
       return `<a href="https://www.wikidata.org/wiki/Property:${arg}" target="_blank"> ${arg} </a>`;
+    },
+    getWikidataUserLink: function(arg) {
+      return `<a href="https://www.wikidata.org/wiki/User:${arg}" target="_blank"> ${arg} </a>`;
     },
     displayMissingValue: function(arg) {
       let reg = RegExp('Q.+');

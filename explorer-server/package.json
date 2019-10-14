@@ -12,6 +12,7 @@
     "@google-cloud/storage": "^2.5.0",
     "apicache": "^1.4.0",
     "cors": "^2.8.5",
+    "csv-stringify": "^5.3.3",
     "eslint": "^5.16.0",
     "express": "^4.16.4",
     "knex": "^0.17.6",

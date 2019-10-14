@@ -169,9 +169,9 @@
           <b-form-select v-model="userDecision" multiple>
             <option value="all">All</option>
             <option value="yes">Accept</option>
-            <option value="wrong category semantics">Wrong category semantics</option>
-            <option value="wrong belongingship">Wrong belongingship</option>
-            <option value="nonsense">Data corruption</option>
+            <option value="Wrong category semantics">Wrong category semantics</option>
+            <option value="Wrong belongingship">Wrong belongingship</option>
+            <option value="Nonsense">Not Valid</option>
           </b-form-select>
         </b-form-group>    
         </b-col>       
@@ -187,24 +187,33 @@
         >Search</b-button>
       </b-col>
       <b-col>
-        <b-button variant="primary" :disabled="!searched" class="float-right">
+        <div class="float-right">
+        <b-button 
+          variant="primary" 
+          :disabled="!searched || loadingError || records.length == 0 || recordsForDownload.length == 0" 
+        >
           <json-csv
-            :data="records"
-            :name="dsname + epoch + '_searchresult.csv'"
-          >Download as CSV</json-csv>
+            :data="recordsForDownload"
+            :name="dsname + '_epoch(' + epoch + ')_' + Date.now() + '.csv'"
+          >Download Full Dataset</json-csv>
         </b-button>
+        <p style="color:grey; font-style:italic;">Clickable when full dataset loaded.</p>
+        </div>
       </b-col>
     </b-row>
     <!-- Searched table element -->
     <b-spinner label="Loading..." v-if="searching" variant="info" v-bind:style="{marginTop: '2em'}"></b-spinner>
-    <hr v-if="searched" v-bind:style="{marginBottom: 0}">
+    <hr v-if="searched" style="{marginBottom: 0}">
+    <div v-if="searched && loadingError" style="font-weight: bold; font-size:1.5em">{{loadingErrorMessage}}</div>
+    <div v-if="searched && !loadingError && records.length === 0" style="font-weight: bold; font-size:1.5em">No results.</div>
     <catfacts-missing-property
-      v-if="searched"
+      v-if="searched && !loadingError && records.length != 0"
       :records="records"
       :dsname="dsname"
-      :currentEpoch="currentEpoch"
+      :currentEpoch="epoch"
       :reviewed="reviewedInGame === 'yes'"
     ></catfacts-missing-property>
+    <footer style="height: 50px"></footer>
   </b-container>
 </template>
 
@@ -221,11 +230,14 @@ import {
 import JsonCSV from "vue-json-csv";
 import CatfactsMissingPropertyTableView from "./CatfactsMissingPropertyTableView.vue";
 
+// const backendurl =
+//   "https://explorer-backend-dot-dataz-wikiloop-dev.appspot.com";
 const backendurl =
-  "https://explorer-backend-dot-dataz-wikiloop-dev.appspot.com";
+  "https://explorer-backend-dev-dot-dataz-wikiloop-dev.appspot.com";
 const languageSupported = Object.keys(languageAbbrMap)
   .sort((a, b)=>{return languageAbbrMap[a].localeCompare(languageAbbrMap[b])});
 const nullEpochList = [{ value: null, text: "Please choose a dataset first" }];
+const recordsLimit = 1000;
 
 export default {
   name: "CatFactsAdvancedSearch",
@@ -237,7 +249,7 @@ export default {
   data() {
     return {
       selectedLanguageAnd: [],
-      selectedLanguageOr: [],     
+      selectedLanguageOr: [],  
       // currentDataset: dsname,
       // currentEpoch: epoch,
       inputEntityAnd: "",
@@ -256,7 +268,10 @@ export default {
       searched: false,
       totalRows: 1,
       selectedPage: null,
-      records: []
+      records: [],
+      recordsForDownload: [],
+      loadingError: false,
+      loadingErrorMessage: "",
     };
   },
   mounted: function() {
@@ -323,7 +338,7 @@ export default {
       return options;
     },
     getLangOptions: function() {
-      let options = [{ value: "all", text: "All" }];
+      let options = [{ value: "none", text: "None" }];
       languageSupported.forEach(l => {
         options.push({ value: l, text: getFullLanguage(l) });
       });
@@ -332,7 +347,7 @@ export default {
     onSearch: async function() {
       let dt = {
         dsname: this.dsname,
-        epoch: this.currentEpoch,
+        epoch: this.epoch,
         entitiesAnd: this.inputEntityAnd,
         entitiesOr: this.inputEntityOr,
         languagesAnd: this.selectedLanguageAnd,
@@ -340,14 +355,30 @@ export default {
         reviewed: this.reviewedInGame,
         userInclude: this.userInclude,
         userDecision: this.userDecision,
+        type: "display"
       };
       this.searched = false;
       this.searching = true;
-      let res = await axios.post(backendurl + "/catfactsadvancedsearch", dt);
+      let res = await axios.post(backendurl + "/advancedsearch", dt);
+      this.recordsForDownload = [];
       this.searching = false;
       this.searched = true;
-      this.records = res.data;
-      this.totalRows = this.records.length;
+      if (res.status === '404') {
+        this.loadingError = true;
+        this.loadingErrorMessage = res.data.errMessage;
+      }else {
+        this.records = res.data;
+        this.totalRows = this.records.length;
+        if (this.records.length < recordsLimit) {
+          this.recordsForDownload = this.records;
+        }else {
+          dt.type = "download";
+          axios.post(backendurl + "/advancedsearch", dt).then(
+            (response) => {
+              this.recordsForDownload = response.data;
+          })
+        }
+      }
     },
     getTotalPage: function() {
       return Math.ceil(this.totalRows / this.perPage);
