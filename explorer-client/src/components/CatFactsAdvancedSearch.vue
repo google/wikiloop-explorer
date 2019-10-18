@@ -179,12 +179,42 @@
     </div>
     <b-row>
       <b-col>
+        <div class="grey-color text-italic text-left text-underline">
+          <a @click="loadExample1()" class="cursor-pointer">
+            Example 1: Search records that have Chinese and English reference
+          </a>
+        </div>
+      </b-col>
+    </b-row>
+    <b-row>
+      <b-col>
+        <div class="grey-color text-italic text-left text-underline">
+          <a @click="loadExample2()" class="cursor-pointer">
+            Example 2: Search records that relate to entity 'Q15918083' having Chinese or English reference
+          </a>
+        </div>
+      </b-col>
+    </b-row>    
+    <b-row>
+      <b-col>
+        <div class="grey-color text-italic text-left text-underline form-group">
+          <a @click="loadExample3()" class="cursor-pointer">
+            Example 3: Search records that are marked in game and the decision is "Wrong category semantics"
+          </a>
+        </div>     
+      </b-col> 
+    </b-row>
+    <b-row>
+      <b-col md="1">
         <b-button
           variant="primary"
           :disabled="searchDisabled"
           @click="onSearch()"
           class="float-left"
         >Search</b-button>
+      </b-col>
+      <b-col md="1">
+        <b-button variant="success" @click="resetSearch()">Reset</b-button>
       </b-col>
       <b-col>
         <div class="float-right">
@@ -224,7 +254,6 @@ import _ from "lodash";
 import {
   getNameForDisplay,
   getFullLanguage,
-  getHTMLLinks,
   languageAbbrMap
 } from "../utils/utils";
 import JsonCSV from "vue-json-csv";
@@ -403,7 +432,66 @@ export default {
         }
       });
       return check;      
+    },
+    loadExample1: function(){
+      this.selectedLanguageAnd = ['zh'];
+      this.selectedLanguageOr = []; 
+      this.inputEntityAnd = "";
+      this.inputEntityOr = "";
+      this.reviewedInGame = "all";
+      this.userInclude = "";
+      this.userDecision = [];     
+    },
+    loadExample2: function(){
+      this.selectedLanguageAnd = [];
+      this.selectedLanguageOr = ['zh','en']; 
+      this.inputEntityAnd = "Q15918083";
+      this.inputEntityOr = "";
+      this.reviewedInGame = "all";
+      this.userInclude = "";
+      this.userDecision = [];     
+    },
+    loadExample3: function(){
+      this.selectedLanguageAnd = [];
+      this.selectedLanguageOr = []; 
+      this.inputEntityAnd = "";
+      this.inputEntityOr = "";
+      this.reviewedInGame = "yes";
+      this.userInclude = "";
+      this.userDecision = ["Wrong category semantics"];     
+    },
+    resetSearch: function(){
+      this.selectedLanguageAnd = [];
+      this.selectedLanguageOr = []; 
+      this.inputEntityAnd = "";
+      this.inputEntityOr = "";
+      this.reviewedInGame = "all";
+      this.userInclude = "";
+      this.userDecision = [""];         
     }
   }
 };
 </script>
+
+<style scoped>
+.grey-color {
+  color:grey; 
+}
+
+.text-italic {
+  font-style:italic;
+}
+
+.text-underline {
+  text-decoration: underline;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+</style>
