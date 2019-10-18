@@ -36,7 +36,11 @@
         <doughnut-chart :chartdata="decisionDistribution" :options="defaultChartOptions"/>
       </b-col>
       <b-col md="6">
-        <b-table bordered striped :items="decisionsDistributionInTable"></b-table>
+        <b-table bordered striped :items="decisionsDistributionInTable">
+          <template v-slot:cell(decision)="data">
+            <span>{{data.value}} <a-icon v-if="decisionMap.hasOwnProperty(data.value)" type="question-circle" v-b-tooltip.hover :title="decisionMap[data.value]"/></span>
+          </template>  
+        </b-table>
       </b-col>
       </b-row>
     </b-card>    
@@ -67,7 +71,14 @@
   import { getNameForDisplay } from "../utils/utils";
   const backendurl = 'https://explorer-backend-dot-dataz-wikiloop-dev.appspot.com';
   const titleSize = 20;
-  const colors = ['#41B883', '#E46651', '#00D8FF', '#DD1B16'];
+  const colors = ['red', 'green', 'light blue', 'orange'];
+  const decisionColor = {
+    "yes": "#27AE60",
+    "no": "#E74C3C",
+    "Wrong belongingship": "#F39C12",
+    "Wrong category semantics": "#9B59B6",
+    "Nonsense": "#7F8C8D"
+  }
   
   export default {
     name: 'StatsGraph',
@@ -120,6 +131,11 @@
         defaultChartOptions: {
           responsive: true,
           maintainAspectRatio: false
+        },
+        decisionMap: {
+          "WRONG BELONGINGSHIP": "The entity does not belongs to the category, e.g. an athlete should not belong to category 'American singers'.",
+          "WRONG CATEGORY SEMANTICS": "The category carries wrong semantics, e.g. given a category 'American singers', it should not implies 'occupation' as 'athlete'.",
+          "NONSENSE": "Other problems, e.g. the data offered is corrupted."
         }
       }
     },
@@ -193,7 +209,7 @@
               {
                 label: 'Edits by Day',
                 data: accumulateEdits.data.map(r => {return r.accumulate_edits;}),
-                backgroundColor: '#41B883'
+                backgroundColor: '#27AE60'
               }
             ]
           };
@@ -208,7 +224,9 @@
             datasets: [
               {
                 data: decisions.data.map(r => {return r.num;}),
-                backgroundColor: colors.slice(0, decisions.data.length)
+                backgroundColor: decisions.data.map(r => {
+                  return decisionColor[r.decision];
+                })
               }
             ]
           };
@@ -222,6 +240,12 @@
           this.decisionDistributionReceived = true;
           this.dataReceived = true;
         }        
+      },
+      getDecisionDescription: function(arg) {        
+        let des = "<div>";
+        des += arg;
+        des += `<a-icon type="question-circle"/></div>`
+        return des;
       }
     }
   }

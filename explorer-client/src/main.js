@@ -20,10 +20,12 @@ import VueGoogleCharts from 'vue-google-charts'
 import VueAnalytics from 'vue-analytics'
 import router from './router'
 import App from './App.vue'
+import { Icon} from 'ant-design-vue';
 
 Vue.config.productionTip = false
 Vue.use(BootstrapVue)
 Vue.use(VueGoogleCharts)
+Vue.use(Icon)
 Vue.use(VueAnalytics, {
   id: 'UA-122681777-4',
   router

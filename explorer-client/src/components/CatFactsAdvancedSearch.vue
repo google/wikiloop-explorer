@@ -181,7 +181,7 @@
       <b-col>
         <div class="grey-color text-italic text-left text-underline">
           <a @click="loadExample1()" class="cursor-pointer">
-            Example 1: Search records that have Chinese and English reference
+            Example 1: Search records that have Chinese and English reference.
           </a>
         </div>
       </b-col>
@@ -190,7 +190,7 @@
       <b-col>
         <div class="grey-color text-italic text-left text-underline">
           <a @click="loadExample2()" class="cursor-pointer">
-            Example 2: Search records that relate to entity 'Q15918083' having Chinese or English reference
+            Example 2: Search records that relate to entity(category) 'Q15918083' having Chinese or English reference.
           </a>
         </div>
       </b-col>
@@ -199,7 +199,7 @@
       <b-col>
         <div class="grey-color text-italic text-left text-underline form-group">
           <a @click="loadExample3()" class="cursor-pointer">
-            Example 3: Search records that are marked in game and the decision is "Wrong category semantics"
+            Example 3: Search records that are marked in game and the decision is "Wrong category semantics".
           </a>
         </div>     
       </b-col> 
