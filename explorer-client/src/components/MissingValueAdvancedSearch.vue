@@ -28,7 +28,7 @@
         label="Dataset Name"
         label-align="left"
       >
-      <div class="col-form-label" style="text-align: left; font-weight: bold;">{{datasetDisplayName}}</div>
+      <div class="col-form-label text-left" style="font-weight: bold;">{{datasetDisplayName}}</div>
       </b-form-group>
       </b-col>
       <b-col>
@@ -38,34 +38,12 @@
         label="Dataset Epoch"
         label-align="left"
       >
-      <div class="col-form-label" style="text-align: left; font-weight: bold;">{{epoch}}</div>
+      <div class="col-form-label text-left" style="font-weight: bold;">{{epoch}}</div>
       </b-form-group>
       </b-col>
     </b-row>
     <b-row>
-      <!-- Q number includes (AND) -->
-      <b-col class="my-2 self-right">
-        <b-form-group
-          label-cols="4"
-          label-cols-lg="2"
-          label="Entity Includes (and)"
-          label-for="entity-include-and"
-          label-align="left"
-          :invalid-feedback="invalidFeedback"
-          :state="inputEntityState"
-        >
-          <b-form-input
-            v-model="inputEntityAnd"
-            placeholder="Example: Q123 or Q123,Q456 (if multiple entities). Same for the following inputs."
-            id="entity-include-and"
-            trim
-            :state="inputEntityState"
-          ></b-form-input>
-        </b-form-group>
-      </b-col>
-    </b-row>
-    <b-row>
-      <!-- Q number includes (OR) -->
+      <!-- Entity contains -->
       <b-col class="my-2 self-right">
         <b-form-group
           label-cols="4"
@@ -77,14 +55,15 @@
           :state="inputEntityState"
         >
           <b-form-input
-            v-model="inputEntityOr"
+            v-model="inputEntity"
+            placeholder="Example: Q123 or Q123,Q456 (if multiple entities)."
             id="entity-include-or"
             trim
             :state="inputEntityState"
           ></b-form-input>
         </b-form-group>
       </b-col>
-    </b-row>    
+    </b-row>
     <b-row>
       <!-- Multi selector on language -->
       <b-col class="my-2 self-right" md="6">
@@ -100,7 +79,7 @@
             :select-size="6"
             id="select-language-and"
           ></b-form-select>
-          <!-- <div class="my-2">Selected: <strong>{{ language }}</strong></div> -->
+          <p class="foot-note">Each returned record has references in all the selected languages.</p>         
         </b-form-group>
       </b-col>
       <b-col class="my-2 self-right" md="6">
@@ -116,7 +95,7 @@
             :select-size="6"
             id="select-language-or"
           ></b-form-select>
-          <!-- <div class="my-2">Selected: <strong>{{ language }}</strong></div> -->
+          <p class="foot-note remove-margin-bottom">Each returned record has references in at least one of the selected languages.</p>
         </b-form-group>
       </b-col>      
     </b-row>
@@ -134,9 +113,10 @@
           <option value="yes">Reviewed</option>
           <option value="no">Not reviewed</option>
         </b-form-select>
+        <p class="foot-note remove-margin-bottom">Whether returned records are reviewed in wikiloop game.</p>
       </b-form-group>  
       </b-col>
-    </b-row>
+    </b-row>    
     <div v-if="reviewedInGame === 'yes'">
       <b-row>
         <!-- Filter by user -->
@@ -150,28 +130,26 @@
           >
             <b-form-input
               v-model="userInclude"
-              placeholder="Put wiki user name here, separate by ','."
+              placeholder="Input wiki user name here, separate by ','."
               id="user-include"
               trim
             ></b-form-input>
           </b-form-group>
         </b-col>
-      </b-row>      
+      </b-row>
       <b-row>
         <!-- Filter by user decision -->
         <b-col>
         <b-form-group 
           label-cols="4"
           label-cols-lg="2"
-          label="User decision (or)"
+          label="User decision"
           label-align="left"
         >
-          <b-form-select v-model="userDecision" multiple>
+          <b-form-select v-model="userDecision">
             <option value="all">All</option>
             <option value="yes">Accept</option>
-            <option value="Wrong category semantics">Wrong category semantics</option>
-            <option value="Wrong belongingship">Wrong belongingship</option>
-            <option value="Nonsense">Not Valid</option>
+            <option value="no">Decline</option>
           </b-form-select>
         </b-form-group>    
         </b-col>       
@@ -181,29 +159,20 @@
       <b-col>
         <div class="grey-color text-italic text-left text-underline">
           <a @click="loadExample1()" class="cursor-pointer">
-            Example 1: Search records that have Chinese and English reference.
+            Example 1: Search records that have Chinese or English reference.
           </a>
         </div>
       </b-col>
     </b-row>
-    <b-row>
-      <b-col>
-        <div class="grey-color text-italic text-left text-underline">
-          <a @click="loadExample2()" class="cursor-pointer">
-            Example 2: Search records that relate to entity(category) 'Q15918083' having Chinese or English reference.
-          </a>
-        </div>
-      </b-col>
-    </b-row>    
     <b-row>
       <b-col>
         <div class="grey-color text-italic text-left text-underline form-group">
-          <a @click="loadExample3()" class="cursor-pointer">
-            Example 3: Search records that are marked in game and the decision is "Wrong category semantics".
+          <a @click="loadExample2()" class="cursor-pointer">
+            Example 2: Search records that reviewed and declined by 'Chaoyuel' having Chinese reference.
           </a>
-        </div>     
-      </b-col> 
-    </b-row>
+        </div>
+      </b-col>
+    </b-row>      
     <b-row>
       <b-col md="1">
         <b-button
@@ -227,22 +196,20 @@
             :name="dsname + '_epoch(' + epoch + ')_' + Date.now() + '.csv'"
           >Download Full Dataset</json-csv>
         </b-button>
-        <p style="color:grey; font-style:italic;">Clickable when full dataset loaded.</p>
+        <p class="foot-note">Clickable when full dataset loaded.</p>
         </div>
       </b-col>
-    </b-row>
+    </b-row>    
     <!-- Searched table element -->
     <b-spinner label="Loading..." v-if="searching" variant="info" v-bind:style="{marginTop: '2em'}"></b-spinner>
-    <hr v-if="searched" style="{marginBottom: 0}">
-    <div v-if="searched && loadingError" style="font-weight: bold; font-size:1.5em">{{loadingErrorMessage}}</div>
-    <div v-if="searched && !loadingError && records.length === 0" style="font-weight: bold; font-size:1.5em">No results.</div>
-    <catfacts-missing-property
-      v-if="searched && !loadingError && records.length != 0"
+    <hr v-if="searched" v-bind:style="{marginBottom: 0}">
+    <missing-value-view
+      v-if="searched"
       :records="records"
       :dsname="dsname"
       :currentEpoch="epoch"
       :reviewed="reviewedInGame === 'yes'"
-    ></catfacts-missing-property>
+    ></missing-value-view>
     <footer style="height: 50px"></footer>
   </b-container>
 </template>
@@ -257,7 +224,7 @@ import {
   languageAbbrMap
 } from "../utils/utils";
 import JsonCSV from "vue-json-csv";
-import CatfactsMissingPropertyTableView from "./CatfactsMissingPropertyTableView.vue";
+import MissingValueTableView from "./MissingValueTableView.vue";
 
 const backendurl =
   "https://explorer-backend-dot-dataz-wikiloop-dev.appspot.com";
@@ -266,23 +233,20 @@ const languageSupported = Object.keys(languageAbbrMap)
 const recordsLimit = 1000;
 
 export default {
-  name: "CatFactsAdvancedSearch",
+  name: "MissingValueAdvancedSearch",
   props: ["dsname", "epoch"],
   components: {
     "json-csv": JsonCSV,
-    "catfacts-missing-property": CatfactsMissingPropertyTableView
+    "missing-value-view": MissingValueTableView
   },
   data() {
     return {
+      inputEntity: "",
       selectedLanguageAnd: [],
-      selectedLanguageOr: [],  
-      inputEntityAnd: "",
-      inputEntityOr: "",
+      selectedLanguageOr: [],
       reviewedInGame: "all",
       userInclude: "",
-      userDecision: [],
-      datasetlist: [],
-      epochlist: [],
+      userDecision: "all",
       languages: [],
       // Table properties
       perPage: 20,
@@ -294,8 +258,6 @@ export default {
       selectedPage: null,
       records: [],
       recordsForDownload: [],
-      loadingError: false,
-      loadingErrorMessage: "",
     };
   },
   mounted: function() {
@@ -303,20 +265,23 @@ export default {
   },
   computed: {
     inputEntityState: function() {
-      if (!this.inputEntityAnd && !this.inputEntityOr) {
+      if (!this.inputItem) {
         return true;
       }
+      let items = this.inputItem.split(",");
       let check = true;
-      if (this.inputEntityAnd) {
-        check = this.checkInputEntity(this.inputEntityAnd);
-      }
-      if (this.inputEntityOr) {
-        check = check && this.checkInputEntity(this.inputEntityOr);
-      }
+      items.forEach(i => {
+        i = i.trim();
+        // Each item should follow pattern "Q<number>"
+        // and shorter than 10 char when not empty
+        if (i.length > 0 && (i.length > 10 || !/^[Qq]\d+$/.test(i))) {
+          check = false;
+        }
+      });
       return check;
     },
     invalidFeedback: function() {
-      return this.inputItemState === false ? "Wrong input format!" : "";
+      return this.inputEntityState === false ? "Wrong input format!" : "";
     },
     searchDisabled: function() {
       if (this.dsname && this.epoch && this.inputEntityState) {
@@ -331,7 +296,7 @@ export default {
   },
   methods: {
     getLangOptions: function() {
-      let options = [{ value: "none", text: "None" }];
+      let options = [{ value: "none", text: "Clear Selection" }];
       languageSupported.forEach(l => {
         options.push({ value: l, text: getFullLanguage(l) });
       });
@@ -341,8 +306,7 @@ export default {
       let dt = {
         dsname: this.dsname,
         epoch: this.epoch,
-        entitiesAnd: this.inputEntityAnd,
-        entitiesOr: this.inputEntityOr,
+        entities: this.inputEntity,
         languagesAnd: this.selectedLanguageAnd,
         languagesOr: this.selectedLanguageOr,
         reviewed: this.reviewedInGame,
@@ -386,55 +350,30 @@ export default {
         }
       });
     },
-    checkInputEntity: function(entities) {
-      let items = entities.split(",");
-      let check = true;
-      items.forEach(i => {
-        i = i.trim();
-        // Each item should follow pattern "Q<number>" or "P<number>"
-        // and shorter than 10 char
-        if (i.length > 0 && (i.length > 10 || !/^[QqPp]\d+$/.test(i))) {
-          check = false;
-        }
-      });
-      return check;      
-    },
-    loadExample1: function(){
-      this.selectedLanguageAnd = ['zh'];
-      this.selectedLanguageOr = []; 
-      this.inputEntityAnd = "";
-      this.inputEntityOr = "";
-      this.reviewedInGame = "all";
-      this.userInclude = "";
-      this.userDecision = [];     
-    },
-    loadExample2: function(){
-      this.selectedLanguageAnd = [];
-      this.selectedLanguageOr = ['zh','en']; 
-      this.inputEntityAnd = "Q15918083";
-      this.inputEntityOr = "";
-      this.reviewedInGame = "all";
-      this.userInclude = "";
-      this.userDecision = [];     
-    },
-    loadExample3: function(){
-      this.selectedLanguageAnd = [];
-      this.selectedLanguageOr = []; 
-      this.inputEntityAnd = "";
-      this.inputEntityOr = "";
-      this.reviewedInGame = "yes";
-      this.userInclude = "";
-      this.userDecision = ["Wrong category semantics"];     
-    },
     resetSearch: function(){
       this.selectedLanguageAnd = [];
       this.selectedLanguageOr = []; 
-      this.inputEntityAnd = "";
-      this.inputEntityOr = "";
+      this.inputEntity = "";
       this.reviewedInGame = "all";
       this.userInclude = "";
-      this.userDecision = [""];         
-    }
+      this.userDecision = "all";    
+    },
+    loadExample1: function() {
+      this.selectedLanguageAnd = [];
+      this.selectedLanguageOr = ['en', 'zh']; 
+      this.inputEntity = "";
+      this.reviewedInGame = "all";
+      this.userInclude = "";
+      this.userDecision = "all";       
+    },
+    loadExample2: function() {
+      this.selectedLanguageAnd = ['zh'];
+      this.selectedLanguageOr = []; 
+      this.inputEntity = "";
+      this.reviewedInGame = "yes";
+      this.userInclude = "Chaoyuel";
+      this.userDecision = "no";     
+    }   
   }
 };
 </script>
@@ -458,5 +397,15 @@ export default {
 
 .cursor-pointer {
   cursor: pointer;
+}
+
+.foot-note {
+  color:grey;
+  font-style:italic;  
+  text-align: left;
+}
+
+.remove-margin-bottom {
+  margin-bottom: 0;
 }
 </style>

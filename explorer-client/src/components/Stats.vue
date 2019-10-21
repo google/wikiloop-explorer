@@ -134,7 +134,7 @@
         },
         decisionMap: {
           "WRONG BELONGINGSHIP": "The entity does not belongs to the category, e.g. an athlete should not belong to category 'American singers'.",
-          "WRONG CATEGORY SEMANTICS": "The category carries wrong semantics, e.g. given a category 'American singers', it should not implies 'occupation' as 'athlete'.",
+          "WRONG CATEGORY SEMANTICS": "The category carries wrong semantics, e.g. given a category 'American singers', it should not imply 'occupation' as 'athlete'.",
           "NONSENSE": "Other problems, e.g. the data offered is corrupted."
         }
       }

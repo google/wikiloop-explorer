@@ -25,7 +25,7 @@
               <b-button variant="outline-primary" :disabled="!filter" @click="filter = ''">Clear</b-button>
               <b-button
                 variant="outline-primary"
-                :to="{ name: 'AdvancedSearch', query:{dsname: dsname, epoch: currentEpoch}}"
+                :to="{ name: 'MissingValueAdvancedSearch', query:{dsname: dsname, epoch: currentEpoch}}"
                 v-if="!this.$route.path.includes('advancedsearch')"
               >Advanced search</b-button>
             </b-input-group-append>
@@ -49,7 +49,7 @@
       id="my-table"
       head-variant="light"
       :items="records"
-      :fields="fields"
+      :fields="conditionalFields"
       :per-page="perPage"
       :current-page="currentPage"
       :filter="filter"
@@ -64,6 +64,9 @@
       <template v-slot:cell(missingValue)="data">
         <span v-html="displayMissingValue(data.value)"></span>
       </template>      
+      <template v-slot:cell(user)="data">
+        <span v-html="getWikidataUserLink(data.value)"></span>
+      </template>  
     </b-table>
 
     <b-row align-v="center" align-h="start">
@@ -101,7 +104,7 @@ import { getHTMLLinks, getNameForDisplay } from "../utils/utils";
 
 export default {
   name: "MisingValueTableView",
-  props: ["records", "dsname", "currentEpoch"],
+  props: ["records", "dsname", "currentEpoch", "reviewed"],
   data() {
     return {
       pageOptions: [5, 20, 100],
@@ -110,18 +113,30 @@ export default {
       totalRows: this.records.length,
       perPage: 20,
       filter: null,
-      recordsLimit: 1000,
-      fields: [
-        { key: "qNumber", label: "Wikidata entity", sortable: true },
-        { key: "missingValue", label: "Missing value", sortable: true },
-        { key: "refs", label: "Wikipedia reference", sortable: true }        
-      ]
+      recordsLimit: 1000
     };
   },
   computed: {
     dsDisplayName: function() {
       return getNameForDisplay(this.dsname);
-    }
+    },
+    conditionalFields: function() {
+      if (this.reviewed) {
+        return [
+          { key: "qNumber", label: "Wikidata entity", sortable: true },
+          { key: "missingValue", label: "Missing value", sortable: true },
+          { key: "refs", label: "Wikipedia reference", sortable: true },
+          { key: "user", label: "User", sortable: true},
+          { key: "decision", label: "Decison"}   
+        ];
+      } else {
+        return [
+          { key: "qNumber", label: "Wikidata entity", sortable: true },
+          { key: "missingValue", label: "Missing value", sortable: true },
+          { key: "refs", label: "Wikipedia reference", sortable: true }  
+        ];
+      }
+    }    
   },
   methods: {
     getALinks: function(arg) {
@@ -129,6 +144,9 @@ export default {
     },
     getWikidataLinkByQNumber: function(arg) {
       return `<a href="https://www.wikidata.org/wiki/${arg}" target="_blank"> ${arg} </a>`;
+    },
+    getWikidataUserLink: function(arg) {
+      return `<a href="https://www.wikidata.org/wiki/User:${arg}" target="_blank"> ${arg} </a>`;
     },
     displayMissingValue: function(arg) {
       if (arg.includes('http://www.wikidata.org/wiki/Q')){

@@ -22,7 +22,7 @@ import DatasetView from '@/components/DatasetView'
 import ToolsList from '@/components/ToolsList'
 import Stats from '@/components/Stats'
 import Leaderboard from '@/components/Leaderboard'
-import AdvancedSearch from '@/components/AdvancedSearch'
+import MissingValueAdvancedSearch from '@/components/MissingValueAdvancedSearch'
 import CatFactsAdvancedSearch from '@/components/CatFactsAdvancedSearch'
 
 Vue.use(Router)
@@ -58,9 +58,9 @@ export default new Router({
       props: true
     },
     {
-      path: '/advancedsearch',
-      name: 'AdvancedSearch',
-      component: AdvancedSearch,
+      path: '/missingvalueadvancedsearch',
+      name: 'MissingValueAdvancedSearch',
+      component: MissingValueAdvancedSearch,
       props: route => ({
         dsname: route.query.dsname,
         epoch: route.query.epoch
