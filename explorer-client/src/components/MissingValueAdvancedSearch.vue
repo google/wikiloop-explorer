@@ -168,7 +168,7 @@
       <b-col>
         <div class="grey-color text-italic text-left text-underline form-group">
           <a @click="loadExample2()" class="cursor-pointer">
-            Example 2: Search records that reviewed and accept by 'Chaoyuel' having English reference.
+            Example 2: Search records that reviewed and accepted by 'Chaoyuel' having English reference.
           </a>
         </div>
       </b-col>
@@ -196,13 +196,13 @@
             :name="dsname + '_epoch(' + epoch + ')_' + Date.now() + '.csv'"
           >Download Full Dataset</json-csv>
         </b-button>
-        <p class="foot-note">Clickable when full dataset loaded.</p>
+        <p class="foot-note remove-margin-bottom">Clickable when full dataset loaded.</p>
         </div>
       </b-col>
     </b-row>    
     <!-- Searched table element -->
     <b-spinner label="Loading..." v-if="searching" variant="info" v-bind:style="{marginTop: '2em'}"></b-spinner>
-    <hr v-if="searched" v-bind:style="{marginBottom: 0}">
+    <hr v-if="searched">
     <div v-if="searched && loadingError" style="font-weight: bold; font-size:1.5em">{{loadingErrorMessage}}</div>
     <div v-if="searched && !loadingError && records.length === 0" style="font-weight: bold; font-size:1.5em">No results.</div>    
     <missing-value-view

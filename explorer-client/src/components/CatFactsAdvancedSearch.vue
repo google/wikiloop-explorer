@@ -230,13 +230,13 @@
             :name="dsname + '_epoch(' + epoch + ')_' + Date.now() + '.csv'"
           >Download Full Dataset</json-csv>
         </b-button>
-        <p style="color:grey; font-style:italic;">Clickable when full dataset loaded.</p>
+        <p class="foot-note remove-margin-bottom">Clickable when full dataset loaded.</p>
         </div>
       </b-col>
     </b-row>
     <!-- Searched table element -->
     <b-spinner label="Loading..." v-if="searching" variant="info" v-bind:style="{marginTop: '2em'}"></b-spinner>
-    <hr v-if="searched" style="{marginBottom: 0}">
+    <hr v-if="searched">
     <div v-if="searched && loadingError" style="font-weight: bold; font-size:1.5em">{{loadingErrorMessage}}</div>
     <div v-if="searched && !loadingError && records.length === 0" style="font-weight: bold; font-size:1.5em">No results.</div>
     <catfacts-missing-property
