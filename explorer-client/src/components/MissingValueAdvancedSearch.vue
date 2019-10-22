@@ -95,7 +95,7 @@
             :select-size="6"
             id="select-language-or"
           ></b-form-select>
-          <p class="foot-note remove-margin-bottom">Each returned record has references in at least one of the selected languages.</p>
+          <p class="foot-note">Each returned record has references in at least one of the selected languages.</p>
         </b-form-group>
       </b-col>      
     </b-row>
@@ -113,7 +113,7 @@
           <option value="yes">Reviewed</option>
           <option value="no">Not reviewed</option>
         </b-form-select>
-        <p class="foot-note remove-margin-bottom">Whether returned records are reviewed in wikiloop game.</p>
+        <p class="foot-note remove-margin-bottom">Whether returned records were reviewed in wikiloop game.</p>
       </b-form-group>  
       </b-col>
     </b-row>    
@@ -168,7 +168,7 @@
       <b-col>
         <div class="grey-color text-italic text-left text-underline form-group">
           <a @click="loadExample2()" class="cursor-pointer">
-            Example 2: Search records that reviewed and declined by 'Chaoyuel' having Chinese reference.
+            Example 2: Search records that reviewed and accept by 'Chaoyuel' having English reference.
           </a>
         </div>
       </b-col>
@@ -203,8 +203,10 @@
     <!-- Searched table element -->
     <b-spinner label="Loading..." v-if="searching" variant="info" v-bind:style="{marginTop: '2em'}"></b-spinner>
     <hr v-if="searched" v-bind:style="{marginBottom: 0}">
+    <div v-if="searched && loadingError" style="font-weight: bold; font-size:1.5em">{{loadingErrorMessage}}</div>
+    <div v-if="searched && !loadingError && records.length === 0" style="font-weight: bold; font-size:1.5em">No results.</div>    
     <missing-value-view
-      v-if="searched"
+      v-if="searched && !loadingError && records.length != 0"
       :records="records"
       :dsname="dsname"
       :currentEpoch="epoch"
@@ -316,7 +318,14 @@ export default {
       };
       this.searched = false;
       this.searching = true;
-      let res = await axios.post(backendurl + "/advancedsearch", dt);
+      let res;
+      try {
+        res = await axios.post(backendurl + "/advancedsearch", dt);
+      } catch(err) {
+        this.searched = true;
+        this.loadingError = true;
+        this.loadingErrorMessage = 'Unable to retrieve data.';
+      }
       this.recordsForDownload = [];
       this.searching = false;
       this.searched = true;
@@ -367,12 +376,12 @@ export default {
       this.userDecision = "all";       
     },
     loadExample2: function() {
-      this.selectedLanguageAnd = ['zh'];
+      this.selectedLanguageAnd = ['en'];
       this.selectedLanguageOr = []; 
       this.inputEntity = "";
       this.reviewedInGame = "yes";
       this.userInclude = "Chaoyuel";
-      this.userDecision = "no";     
+      this.userDecision = "yes";     
     }   
   }
 };

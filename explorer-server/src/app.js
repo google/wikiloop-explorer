@@ -146,7 +146,6 @@ app.get('/gamelogs/accumulateedits/:dsname/:epoch', cache('5 minutes'), async (r
             .withSchema(dsname)
             .select(knex.raw('date(changetime) as date, count(*) as num'))
             .groupBy('date')
-        console.log(editsByDay.toString());
         var data = await knex.select(knex.raw('T3.date, sum(T3.num) as accumulate_edits'))
             .from(knex.raw('(select T1.date as date, T2.num as num from (' + editsByDay.toString() + ') as T1 cross join (' +
                 editsByDay.toString() + ') as T2 where T1.date >= T2.date order by T1.date) as T3'))
@@ -216,23 +215,18 @@ app.post('/advancedsearch', async (req, res) => {
             result = await queryMissingValueDataset(reqbody);
         } catch(err) {
             console.error(err);
-            res.status(404).send({errMessage: 'Database unreachable. Please try again later.' });
+            res.status(404).send({ errMessage: 'Database unreachable. Please try again later.' });
         }
         res.send(result);
     } else if (reqbody.dsname.includes('catfacts')) {
         let result;
-        if (reqbody.reviewed && reqbody.reviewed === 'no') {
-            let resForUnreviewed = await queryCatfactsMissingProperty(reqbody);
-            res.send(resForUnreviewed);
-        } else {
-            try {
-                result = await queryCatfactsMissingProperty(reqbody);
-            } catch(err) {
-                console.error(err);
-                res.status(404).send({ errMessage: 'Database unreachable. Please try again later.' });
-            }
-            res.send(result);
+        try {
+            result = await queryCatfactsMissingProperty(reqbody);
+        } catch(err) {
+            console.error(err);
+            res.status(404).send({ errMessage: 'Database unreachable. Please try again later.' });
         }
+        res.send(result);
     } else {
         res.send([]);
     }
@@ -241,38 +235,107 @@ app.post('/advancedsearch', async (req, res) => {
 async function queryMissingValueDataset(reqbody) {
     let epoch = reqbody.epoch;
     let dsname = reqbody.dsname;
-    let epochList = await getDsEpoch(dsname);
-    if (!epochList.includes(epoch)) {
-        console.error('Dataset not found!');
-        return [];
+    let dstable = dsname + '_' + epoch;
+    let query = knex.withSchema(dsname);
+    let entities = reqbody.entities;
+    let languagesAnd = reqbody.languagesAnd;
+    let languagesOr = reqbody.languageOr;
+    let reviewed = reqbody.reviewed;
+    // Get all entity number (eg. 'Q123') from entity list.
+    if (entities) {
+        let andList = entities.split(',');
+        query.where((builder) => {
+            andList.forEach(i => {
+                i = i.trim();
+                builder.orWhere('qNumber', i);
+            })
+        })  
     }
-    let itemList = reqbody.items.split(',');
-    // Get all entity number (eg. 'Q123') from items list.
-    let qItems = [];
-    itemList.forEach(i => {
-        i = i.trim();
-        if (/^[Qq]\d+$/.test(i)) {
-            qItems.push(i);
-        }
-    });
-    if (reqbody.items.length !== 0 && qItems.length === 0) {
-        console.error('Query items not valid');
-        return [];
-    }
-    let langs = reqbody.languages;
-    let table = dsname + '_' + epoch;
-    let query = knex.withSchema(dsname).from(table).select();
-    if (qItems.length !== 0) {
-        query.whereIn('qNumber', qItems);
-    }
-    if (!langs.includes('none') && langs.length > 0) {
-        query.where(function () {
-            for (let lang of langs) {
-                this.orWhere('languages', 'like', '%' + lang + '%');
+    // Language match
+    if (languagesAnd && languagesAnd.length > 0 && !languagesAnd.includes('none')){
+        query.andWhere((builder) => {
+            for (let l of languagesAnd) {
+                builder.andWhere('languages', 'like', '%' + l + '%');
             }
-        });
+        })
     }
-    return query;
+    if (languagesOr && languagesOr.length > 0 && !languagesOr.includes('none')) {
+        query.andWhere((builder) => {
+            for (let l of languagesOr) {
+                builder.orWhere('languages', 'like', '%' + l + '%');
+            }
+        })
+    }      
+    // reviewd or not
+    if (!reviewed || reviewed === 'all') {
+        if (reqbody.type === "display") {
+            query.limit(recordsLimit);
+        }
+        query.from(dstable).select('qNumber', 'missingValue', 'refs');
+        return query;
+    }else {
+        if (reviewed === 'no') {
+            // special treatment for no cases cause its super slow
+            // Move the "join" logic from mysql to here
+            let reviewed;
+            try{
+                reviewed = await knex.withSchema(dsname).from(dstable + '_logging').select('qNumber');
+            } catch(e) {
+                console.err(e);
+            }
+            let reviewedIds = [];
+            reviewed.map(r => {
+                reviewedIds.push(r.id);
+            })
+            if (reqbody.type === "display") {
+                query.limit(recordsLimit + reviewedIds.length);
+            }
+            query.from(dstable);
+            let tempRecords;
+            try {
+                tempRecords = await query.from(dstable).select('qNumber', 'missingValue', 'refs');
+            } catch(err) {
+                console.error(err);
+            }
+            let result = [];
+            tempRecords.map(r => {
+                if (!reviewedIds.includes(r.qNumber)) {
+                    result.push({
+                        qNumber: r.qNumber,
+                        missingValue: r.missingValue,
+                        refs: r.refs
+                    });
+                }
+            })
+            if (reqbody.type === "display") {
+                return result.slice(0, recordsLimit);
+            }else {
+                return result;
+            }
+        }else {
+            if (reqbody.type === "display") {
+                query.limit(recordsLimit);
+            }
+            let userInclude = reqbody.userInclude;
+            let userDecision = reqbody.userDecision;
+            if (userInclude) {
+                let userList = userInclude.split(',');
+                query.andWhere((builder) => {
+                    userList.forEach(i => {
+                        i = i.trim();
+                        builder.orWhere('user', i);
+                    })
+                })     
+            }
+            if (userDecision && userDecision !== 'all') {
+                query.andWhere('decision', userDecision);              
+            }
+            query.from(knex.raw(dstable))
+            .joinRaw('inner join ' + dsname + '.' + dstable + '_logging using (qNumber)')
+            .select('qNumber', 'missingValue', 'refs', 'user', 'decision')
+            return query;
+        }
+    }
 }
 
 async function queryCatfactsMissingProperty(reqbody) {
@@ -327,7 +390,6 @@ async function queryCatfactsMissingProperty(reqbody) {
             query.limit(recordsLimit);
         }
         query.from(dstable).select('entity', 'category', 'property', 'missingValue', 'refs');
-        console.log(query.toString());
         return query;
     }else {
         if (reviewed === 'no') {
@@ -349,7 +411,7 @@ async function queryCatfactsMissingProperty(reqbody) {
                 if (!reviewedIds.includes(r.id)) {
                     result.push({
                         entity: r.entity,
-                        catrgory: r.category,
+                        category: r.category,
                         property: r.property,
                         missingValue: r.missingValue,
                         refs: r.refs
@@ -386,7 +448,6 @@ async function queryCatfactsMissingProperty(reqbody) {
             query.from(knex.raw(dstable))
             .joinRaw('inner join ' + dsname + '.' + dstable + '_logging using (id, entity, category, property)')
             .select('entity', 'category', 'property', 'missingValue', 'refs', 'user', 'decision')
-            console.log(query.toString());
             return query;
         }
     }

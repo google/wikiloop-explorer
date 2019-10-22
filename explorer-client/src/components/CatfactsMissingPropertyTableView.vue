@@ -130,20 +130,20 @@ export default {
       if (this.reviewed) {
         return [
           { key: "entity", label: "Wikidata entity", sortable: true },
-          { key: "category", label: "Wikidata Category", sortable: true},
+          { key: "category", label: "Wikidata category", sortable: true},
           { key: "property", label: "Property", sortable: true},
-          { key: "missingValue", label: "Property Value"},
-          { key: "refs", label: "Wikipedia Category Reference"},
+          { key: "missingValue", label: "Missing property value"},
+          { key: "refs", label: "Wikipedia category reference"},
           { key: "user", label: "User", sortable: true},
           { key: "decision", label: "Decison"}   
         ];
       } else {
         return [
           { key: "entity", label: "Wikidata entity", sortable: true },
-          { key: "category", label: "Wikidata Category", sortable: true},
+          { key: "category", label: "Wikidata category", sortable: true},
           { key: "property", label: "Property", sortable: true},
-          { key: "missingValue", label: "Property Value"},
-          { key: "refs", label: "Wikipedia Category Reference"}     
+          { key: "missingValue", label: "Missing property value"},
+          { key: "refs", label: "Wikipedia category reference"}     
         ];
       }
     }

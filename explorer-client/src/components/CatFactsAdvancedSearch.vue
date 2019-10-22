@@ -61,6 +61,7 @@
             trim
             :state="inputEntityState"
           ></b-form-input>
+          <p class="foot-note remove-margin-bottom">Each returned record is related to all entities input here.</p>         
         </b-form-group>
       </b-col>
     </b-row>
@@ -82,6 +83,7 @@
             trim
             :state="inputEntityState"
           ></b-form-input>
+          <p class="foot-note remove-margin-bottom">Each returned record is related to at least one of the entities input here.</p>         
         </b-form-group>
       </b-col>
     </b-row>    
@@ -100,7 +102,7 @@
             :select-size="6"
             id="select-language-and"
           ></b-form-select>
-          <!-- <div class="my-2">Selected: <strong>{{ language }}</strong></div> -->
+          <p class="foot-note">Each returned record has references in all the selected languages.</p>         
         </b-form-group>
       </b-col>
       <b-col class="my-2 self-right" md="6">
@@ -116,7 +118,7 @@
             :select-size="6"
             id="select-language-or"
           ></b-form-select>
-          <!-- <div class="my-2">Selected: <strong>{{ language }}</strong></div> -->
+          <p class="foot-note">Each returned record has references in at least one of the selected languages.</p>
         </b-form-group>
       </b-col>      
     </b-row>
@@ -134,6 +136,7 @@
           <option value="yes">Reviewed</option>
           <option value="no">Not reviewed</option>
         </b-form-select>
+        <p class="foot-note remove-margin-bottom">Whether returned records were reviewed in wikiloop game.</p>
       </b-form-group>  
       </b-col>
     </b-row>
@@ -458,5 +461,15 @@ export default {
 
 .cursor-pointer {
   cursor: pointer;
+}
+
+.foot-note {
+  color:grey;
+  font-style:italic;  
+  text-align: left;
+}
+
+.remove-margin-bottom {
+  margin-bottom: 0;
 }
 </style>
