@@ -30,6 +30,7 @@
               >{{getDisplayName(dataset)}}</b-dropdown-item>
             </b-nav-item-dropdown>
             <b-nav-item :to="{name: 'ToolsList'}">Tools</b-nav-item>
+            <b-nav-item href="https://github.com/google/wikiloop-explorer/issues">Issues</b-nav-item>
           </b-navbar-nav>
         </b-collapse>
       </b-navbar>
