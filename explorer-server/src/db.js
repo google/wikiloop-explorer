@@ -17,8 +17,9 @@
  */
 
 const Knex = require('knex');
+const mongoose = require('mongoose');
 
-function dbConnect() {
+function mysqlConnect() {
   const config = {
       user: process.env.SQL_USER,
       password: process.env.SQL_PASSWORD
@@ -37,4 +38,16 @@ function dbConnect() {
   return knex;   
 }
 
-module.exports = dbConnect
+function mongodbConnect() {
+    let uri = process.env.MONGODB_CONNECTION_URI;
+    let dbName = process.env.MONGODB_DBNAME;
+    mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true, dbName: dbName});
+    let db = mongoose.connection;
+    db.on('error', console.error.bind(console, 'connection error:'));
+    return db;
+}
+
+module.exports = {
+    mysqlConnect,
+    mongodbConnect
+}

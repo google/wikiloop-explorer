@@ -15,13 +15,13 @@
 const express = require('express');
 const cors = require('cors');
 const apicache = require('apicache');
-const dbConnect = require('./db');
-// const stringify = require('csv-stringify');
+const db = require('./db');
 
 const app = express();
 const cache = apicache.middleware;
 const metaDB = process.env.METADATABASE;
-const knex = dbConnect();
+const knex = db.mysqlConnect();
+const mongodb = db.mongodbConnect();
 const dbEpochCache = {
     'missingdateofbirth': [],
     'missingdateofdeath': [],
@@ -29,6 +29,9 @@ const dbEpochCache = {
     'catfacts_missingproperty': []
 }
 const recordsLimit = 1000;
+var battlefieldLastUpdated = 0;
+var battlefieldStats = null;
+var battlefieldLoading = false;
 
 app.use(express.json());
 app.use(cors());
@@ -239,7 +242,7 @@ async function queryMissingValueDataset(reqbody) {
     let query = knex.withSchema(dsname);
     let entities = reqbody.entities;
     let languagesAnd = reqbody.languagesAnd;
-    let languagesOr = reqbody.languageOr;
+    let languagesOr = reqbody.languagesOr;
     let reviewed = reqbody.reviewed;
     // Get all entity number (eg. 'Q123') from entity list.
     if (entities) {
@@ -277,20 +280,19 @@ async function queryMissingValueDataset(reqbody) {
         if (reviewed === 'no') {
             // special treatment for no cases cause its super slow
             // Move the "join" logic from mysql to here
-            let reviewed;
+            let reviewedEntities;
             try{
-                reviewed = await knex.withSchema(dsname).from(dstable + '_logging').select('qNumber');
+                reviewedEntities = await knex.withSchema(dsname).from(dstable + '_logging').select('qNumber');
             } catch(e) {
                 console.err(e);
             }
             let reviewedIds = [];
-            reviewed.map(r => {
+            reviewedEntities.map(r => {
                 reviewedIds.push(r.id);
             })
             if (reqbody.type === "display") {
                 query.limit(recordsLimit + reviewedIds.length);
             }
-            query.from(dstable);
             let tempRecords;
             try {
                 tempRecords = await query.from(dstable).select('qNumber', 'missingValue', 'refs');
@@ -346,7 +348,7 @@ async function queryCatfactsMissingProperty(reqbody) {
     let entitiesAnd = reqbody.entitiesAnd;
     let entitiesOr = reqbody.entitiesOr;
     let languagesAnd = reqbody.languagesAnd;
-    let languagesOr = reqbody.languageOr;
+    let languagesOr = reqbody.languagesOr;
     let reviewed = reqbody.reviewed;
     // Entity match
     if (entitiesAnd) {
@@ -395,9 +397,9 @@ async function queryCatfactsMissingProperty(reqbody) {
         if (reviewed === 'no') {
             // special treatment for no cases cause its super slow
             // Move the "join" logic from mysql to here
-            let reviewed = await knex.withSchema(dsname).from(dstable + '_logging').select('id');
+            let reviewedEntities = await knex.withSchema(dsname).from(dstable + '_logging').select('id');
             let reviewedIds = [];
-            reviewed.map(r => {
+            reviewedEntities.map(r => {
                 reviewedIds.push(r.id);
             })
             if (reqbody.type === "display") {
@@ -470,6 +472,170 @@ async function getDsEpoch(dataset) {
     epochs = epochs.map(r => r.epoch);
     dbEpochCache[dataset] = epochs;
     return epochs;
+}
+
+app.get('/battlefield/getInteractionCounts', cache('5 minutes'), async (req, res) => {
+    // console.log(mongodb);
+    let starttime = Date.now();
+    console.log('start time is:' + starttime);
+    console.log('last update time is:' + battlefieldLastUpdated);
+    if(!battlefieldStats) {
+        await getBattlefieldData();
+    }
+    console.log('stats ready took: ' + (Date.now() - starttime));
+    let totalCount = 0;
+    let shouldRevertCount = 0;
+    let notSureCount = 0;
+    let looksGoodCount = 0;
+    let revisionCount = 0;
+    let allRevisions = [];
+    battlefieldStats.forEach(s => {
+        let revision = {};
+        revision.judgementsCount = s.counts;
+        revision.title = s.recentChange.title;
+        revision.wikiSite = s.recentChange.wiki;
+        revision.currentRev = s.recentChange.revision.new;
+        revision.oldRev = s.recentChange.revision.old;
+        allRevisions.push(revision);
+        revisionCount += 1;
+        let counts = s.counts;
+        totalCount += counts.Total;
+        shouldRevertCount += counts.ShouldRevert;
+        notSureCount += counts.NotSure;
+        looksGoodCount += counts.LooksGood;
+    })
+    let result = {
+        Total: totalCount,
+        ShouldRevert: shouldRevertCount,
+        NotSure: notSureCount,
+        LooksGood: looksGoodCount,
+        revisionCount: revisionCount,
+        allRevisions: allRevisions
+    }
+    // update in memory storage per 1 hour
+    if ((Date.now() - battlefieldLastUpdated) > 3600000 && !battlefieldLoading) {
+        console.log('new stats retrieving...');
+        battlefieldLoading = true;
+        getBattlefieldData();
+    }
+    console.log('Until return time took: ' + (Date.now() - starttime));
+    res.send(result);
+})
+
+async function getBattlefieldData() {
+    let records = await mongodb.collection(`Interaction`).aggregate([
+        {
+            $match: {}
+        },
+        {
+            "$group": {
+                "_id": {
+                    "wikiRevId": "$wikiRevId"
+                },
+                "wikiRevId": {
+                    "$first": "$wikiRevId"
+                },
+                "judgements": {
+                    "$push": {
+                        "judgement": "$judgement",
+                        "userGaId": "$userGaId",
+                        "timestamp": "$timestamp"
+                    }
+                },
+                "totalCounts": {
+                    "$sum": 1
+                },
+                "shouldRevertCounts": {
+                    "$sum": {
+                        "$cond": [
+                            {
+                                "$eq": [
+                                    "$judgement",
+                                    "ShouldRevert"
+                                ]
+                            },
+                            1,
+                            0
+                        ]
+                    }
+                },
+                "notSureCounts": {
+                    "$sum": {
+                        "$cond": [
+                            {
+                                "$eq": [
+                                    "$judgement",
+                                    "NotSure"
+                                ]
+                            },
+                            1,
+                            0
+                        ]
+                    }
+                },
+                "looksGoodCounts": {
+                    "$sum": {
+                        "$cond": [
+                            {
+                                "$eq": [
+                                    "$judgement",
+                                    "LooksGood"
+                                ]
+                            },
+                            1,
+                            0
+                        ]
+                    }
+                },
+                "lastTimestamp": {
+                    "$max": "$timestamp"
+                },
+                "recentChange": {
+                    "$first": "$recentChange"
+                }
+            }
+        },
+        {
+            "$project": {
+                "wikiRevId": "$_id.wikiRevId",
+                "judgements": "$judgements",
+                "recentChange": 1,
+                "lastTimestamp": 1,
+                "counts.Total": "$totalCounts",
+                "counts.ShouldRevert": "$shouldRevertCounts",
+                "counts.NotSure": "$notSureCounts",
+                "counts.LooksGood": "$looksGoodCounts"
+            }
+        },
+        {
+            "$match": {
+                "recentChange.ores": {
+                    "$exists": true,
+                    "$ne": null
+                },
+                "recentChange.wiki": {
+                    "$exists": true,
+                    "$ne": null
+                },
+                "lastTimestamp": {
+                    "$exists": true,
+                    "$ne": null
+                }
+            }
+        },
+        {
+            "$sort": {
+                "lastTimestamp": -1
+            }
+        },
+    ],
+        {
+            "allowDiskUse": true
+        })
+        .toArray();
+    battlefieldStats = records;
+    battlefieldLastUpdated = Date.now();
+    battlefieldLoading = false;
 }
 
 // Start the server
