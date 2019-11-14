@@ -21,7 +21,6 @@ const app = express();
 const cache = apicache.middleware;
 const metaDB = process.env.METADATABASE;
 const knex = db.mysqlConnect();
-const mongodb = db.mongodbConnect();
 const dbEpochCache = {
     'missingdateofbirth': [],
     'missingdateofdeath': [],
@@ -475,7 +474,6 @@ async function getDsEpoch(dataset) {
 }
 
 app.get('/battlefield/getInteractionCounts', cache('5 minutes'), async (req, res) => {
-    // console.log(mongodb);
     let starttime = Date.now();
     console.log('start time is:' + starttime);
     console.log('last update time is:' + battlefieldLastUpdated);
@@ -523,6 +521,8 @@ app.get('/battlefield/getInteractionCounts', cache('5 minutes'), async (req, res
 })
 
 async function getBattlefieldData() {
+    const mongodb = await db.mongodbConnect();
+    console.log('mongodb established! ' + Date.now());
     let records = await mongodb.collection(`Interaction`).aggregate([
         {
             $match: {}
@@ -633,6 +633,7 @@ async function getBattlefieldData() {
             "allowDiskUse": true
         })
         .toArray();
+    console.log('Records retrieved successfully! ' + Date.now());
     battlefieldStats = records;
     battlefieldLastUpdated = Date.now();
     battlefieldLoading = false;

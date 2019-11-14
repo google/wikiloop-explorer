@@ -38,12 +38,17 @@ function mysqlConnect() {
   return knex;   
 }
 
-function mongodbConnect() {
+async function mongodbConnect() {
     let uri = process.env.MONGODB_CONNECTION_URI;
     let dbName = process.env.MONGODB_DBNAME;
-    mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true, dbName: dbName});
+    console.log('MongoDb connecting... ' + Date.now());
+    try{
+        await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true, dbName: dbName});
+    }catch(err) {
+        console.error.bind(console, 'connection error:');
+    }
+    console.log('Connected. Connection length is: ' + mongoose.connections.length + ". Time is " + Date.now());
     let db = mongoose.connection;
-    db.on('error', console.error.bind(console, 'connection error:'));
     return db;
 }
 

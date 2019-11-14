@@ -49,7 +49,14 @@
         Wikiloop Battlefield is a tool gamifies wikipedia vandalism detection and correction.
       </b-card-text>
       <hr>
-      <b-button variant="outline-primary" href="http://battlefield.wikiloop.org/" target='_blank'>Play!</b-button>
+      <b-row>
+        <b-col md="6">
+        <b-button variant="outline-primary" :to="{name: 'BattlefieldDetail'}" class="margin-tb">More details</b-button>
+        </b-col>
+        <b-col md="6">
+        <b-button variant="outline-primary" href="http://battlefield.wikiloop.org/" target='_blank' class="margin-tb">Play!</b-button>
+        </b-col>
+      </b-row>
     </b-card-body>   
 
   </b-card>
@@ -60,6 +67,17 @@
 
 <script>
 export default {
-  name: 'ToolsList'
+  name: 'ToolsList',
+  data() {
+    return {
+    }    
+  }
 }
 </script>
+
+<style scoped>
+  .margin-tb{
+    margin-bottom: 5px;
+    margin-top: 5px;
+  }
+</style>

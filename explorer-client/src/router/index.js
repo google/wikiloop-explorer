@@ -24,6 +24,8 @@ import Stats from '@/components/Stats'
 import Leaderboard from '@/components/Leaderboard'
 import MissingValueAdvancedSearch from '@/components/MissingValueAdvancedSearch'
 import CatFactsAdvancedSearch from '@/components/CatFactsAdvancedSearch'
+import WikiloopGameDetail from '@/components/WikiloopGameDetail'
+import BattlefieldDetail from '@/components/BattlefieldDetail'
 
 Vue.use(Router)
 
@@ -74,7 +76,20 @@ export default new Router({
         dsname: route.query.dsname,
         epoch: route.query.epoch
       })
-    },    
+    },
+    {
+      path: '/battlefielddetail',
+      name: 'BattlefieldDetail',
+      component: BattlefieldDetail
+    },        
+    {
+      path: '/wikiloopgamedetail',
+      name: 'WikiloopGameDetail',
+      component: WikiloopGameDetail,
+      props: route => ({
+        dsname: route.query.dsname
+      })
+    },       
   ]
 })
 

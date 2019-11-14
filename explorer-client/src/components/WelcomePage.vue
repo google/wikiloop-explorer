@@ -16,7 +16,7 @@
 <template>
   <div>
     <a href="https://meta.wikimedia.org/wiki/WikiProject_WikiLoop" target="_blank">
-    <b-img src="https://raw.githubusercontent.com/google/wikiloop-explorer/master/explorer-client/src/assets/WikiLoop_Explorer_Logo.jpg" fluid alt="Responsive image">
+    <b-img :src="require('@/assets/WikiLoop_Explorer_Logo.jpg')" fluid alt="Responsive image">
     </b-img>
     </a>
     <h1 class="my-4" style="font-size:4vw;">Welcome to Wikiloop Explorer!</h1>
@@ -28,6 +28,57 @@ export default {
   name: 'WelcomePage'
 }
 </script>
+
+<style>
+.grey-color {
+  color:grey; 
+}
+
+.text-italic {
+  font-style:italic;
+}
+
+.text-underline {
+  text-decoration: underline;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.foot-note {
+  color:grey;
+  font-style:italic;  
+  text-align: left;
+}
+
+.remove-margin-bottom {
+  margin-bottom: 0;
+}
+
+.h2-section-margin {
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.passage-margin {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.tool-passage {
+  font-size: 1.15rem;
+}
+
+.head-description {
+  font-size: 1.3rem
+}
+</style>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
