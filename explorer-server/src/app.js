@@ -473,6 +473,7 @@ async function getDsEpoch(dataset) {
     return epochs;
 }
 
+// Get battlefield stats data
 app.get('/battlefield/getInteractionCounts', cache('5 minutes'), async (req, res) => {
     let starttime = Date.now();
     console.log('start time is:' + starttime);
@@ -638,6 +639,19 @@ async function getBattlefieldData() {
     battlefieldLastUpdated = Date.now();
     battlefieldLoading = false;
 }
+
+// Get pagerank score for a given url
+app.post('/pagerank/getScore', async (req, res) => {
+    let url = req.body.url;
+    let score;
+    try{
+        score = await knex.withSchema("pagerank").from("pagerank_enwiki").select().where("url", url);
+    }catch(error) {
+        console.error(error);
+        res.send([]);
+    }
+    res.send(score);
+})
 
 // Start the server
 const PORT = process.env.PORT || 8081;
