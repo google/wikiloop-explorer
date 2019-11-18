@@ -260,6 +260,8 @@ export default {
       selectedPage: null,
       records: [],
       recordsForDownload: [],
+      loadingError: false,
+      loadingErrorMessage: "",
     };
   },
   mounted: function() {

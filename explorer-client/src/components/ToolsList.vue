@@ -16,11 +16,11 @@
 <template>
 <b-container>
 <b-row class="mt-4">
-  <b-col sm="6">
+  <b-col md="6" lg="4">
   <b-card
     no-body
     border-variant="primary"
-    style="max-width: 20rem;" 
+    style="max-width: 20rem; margin-top: 2rem" 
   >
     <b-card-body>
       <b-card-title>Wikiloop Game</b-card-title>
@@ -38,11 +38,11 @@
     </b-list-group>
   </b-card>
   </b-col>
-  <b-col sm="6">
+  <b-col md="6" lg="4">
   <b-card
     no-body
     border-variant="primary"
-    style="max-width: 20rem;">
+    style="max-width: 20rem; margin-top: 2rem">
      <b-card-body>
       <b-card-title>Wikiloop Battlefield</b-card-title>
       <b-card-text>
@@ -58,10 +58,49 @@
         </b-col>
       </b-row>
     </b-card-body>   
-
+  </b-card>
+  </b-col>
+  <b-col md="6" lg="4">
+    <b-card
+    no-body
+    border-variant="primary"
+    style="max-width: 20rem; margin-top: 2rem">
+     <b-card-body>
+      <b-card-title>Wikiloop Pagerank</b-card-title>
+      <b-card-text>
+        Wikiloop Pagrank is a tool provides pagerank scores of Wikipedia pages.
+      </b-card-text>
+      <hr>
+      <b-row>
+        <b-col>
+        <b-button variant="outline-primary" :to="{name: 'PagerankDetail'}" class="margin-tb">More details</b-button>
+        </b-col>
+      </b-row>
+    </b-card-body>   
   </b-card>
   </b-col>
 </b-row>
+<!-- <b-row style="margin-top: 1rem;">
+  <b-col sm="6" style="float: right">
+  <b-card
+    no-body
+    border-variant="primary"
+    style="max-width: 20rem;">
+     <b-card-body>
+      <b-card-title>Wikiloop Pagerank</b-card-title>
+      <b-card-text>
+        Wikiloop Pagrank is a tool provides pagerank scores of Wikipedia pages.
+      </b-card-text>
+      <hr>
+      <b-row>
+        <b-col>
+        <b-button variant="outline-primary" :to="{name: 'PagerankDetail'}" class="margin-tb">More details</b-button>
+        </b-col>
+      </b-row>
+    </b-card-body>   
+  </b-card>
+  </b-col>
+</b-row> -->
 </b-container>
 </template>
 

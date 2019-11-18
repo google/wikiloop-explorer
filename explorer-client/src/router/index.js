@@ -26,6 +26,7 @@ import MissingValueAdvancedSearch from '@/components/MissingValueAdvancedSearch'
 import CatFactsAdvancedSearch from '@/components/CatFactsAdvancedSearch'
 import WikiloopGameDetail from '@/components/WikiloopGameDetail'
 import BattlefieldDetail from '@/components/BattlefieldDetail'
+import PagerankDetail from '@/components/PagerankDetail'
 
 Vue.use(Router)
 
@@ -81,7 +82,12 @@ export default new Router({
       path: '/battlefielddetail',
       name: 'BattlefieldDetail',
       component: BattlefieldDetail
-    },        
+    },    
+    {
+      path: '/pagerankdetail',
+      name: 'PagerankDetail',
+      component: PagerankDetail
+    },       
     {
       path: '/wikiloopgamedetail',
       name: 'WikiloopGameDetail',

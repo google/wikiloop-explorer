@@ -46,6 +46,10 @@ export default {
   text-align: left;
 }
 
+.text-center {
+  text-align: center;
+}
+
 .cursor-pointer {
   cursor: pointer;
 }
@@ -77,6 +81,11 @@ export default {
 
 .head-description {
   font-size: 1.3rem
+}
+
+.error-message {
+  font-size: 1.3rem;
+  color: red
 }
 </style>
 
