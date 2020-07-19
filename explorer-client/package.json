@@ -19,7 +19,7 @@
     "chart.js": "^2.8.0",
     "core-js": "^2.6.10",
     "express": "^4.17.1",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "vue": "^2.6.10",
     "vue-analytics": "^5.17.0",
     "vue-chartjs": "^3.4.2",
