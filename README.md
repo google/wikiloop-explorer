@@ -16,5 +16,5 @@ Prerequisite: [git](https://git-scm.com), [nodejs](https://nodejs.org), [npm](ht
 git clone git@github.com:google/wikiloop-explorer.git
 ```
 
-The project is seperated to server side and client side. Please go to each subdirectory and follow the README there to setup local development environment.
+The project is separated to server side and client side. Please go to each subdirectory and follow the README there to setup local development environment.
 
