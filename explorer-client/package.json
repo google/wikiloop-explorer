@@ -16,7 +16,7 @@
     "axios": "^0.19.0",
     "bootstrap": "^4.3.1",
     "bootstrap-vue": "^2.0.4",
-    "chart.js": "^2.8.0",
+    "chart.js": "^2.9.4",
     "core-js": "^2.6.10",
     "express": "^4.17.1",
     "lodash": "^4.17.15",
